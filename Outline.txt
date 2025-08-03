@@ -1,0 +1,465 @@
+Medicine Tracker App – Detailed Outline
+
+Overview
+
+A minimal, user-friendly web application to help users track their daily medications, fetch medicine information via a public API, and generate a printable PDF schedule. The app prioritizes simplicity, responsiveness, and data persistence using localStorage.
+
+
+
+Core Features
+
+1. Medicine Input
+
+
+
+
+
+Purpose: Allow users to input medication details for tracking.
+
+
+
+Components:
+
+
+
+
+
+Text Input for Medicine Name:
+
+
+
+
+
+Autocomplete-enabled input field.
+
+
+
+On input, fetch suggestions from RxNav API (e.g., /rxcui endpoint for drug names).
+
+
+
+Display up to 5 suggestions in a dropdown below the input.
+
+
+
+Users can select a suggestion or type a custom name (for non-API matches).
+
+
+
+Time Picker:
+
+
+
+
+
+Multiple time inputs (e.g., HH:MM AM/PM) per medicine.
+
+
+
+Add/remove time slots dynamically (e.g., "Add another time" button).
+
+
+
+Validation: Ensure valid time format and no duplicates for the same medicine.
+
+
+
+Duration Field (Optional):
+
+
+
+
+
+Numeric input for number of days (e.g., 7, 14, or indefinite).
+
+
+
+Default: Indefinite (no end date).
+
+
+
+Validation: Positive integers only or empty for indefinite.
+
+
+
+UI:
+
+
+
+
+
+Form layout using Tailwind CSS for responsiveness.
+
+
+
+Inputs styled with borders, padding, and error states (e.g., red border for invalid input).
+
+
+
+"Add Medicine" button to submit the form and add to the schedule.
+
+
+
+Behavior:
+
+
+
+
+
+On form submission, validate inputs (non-empty name, at least one valid time).
+
+
+
+Store medicine data in localStorage as JSON array.
+
+
+
+Clear form after successful submission and refresh schedule display.
+
+2. Medicine Info Fetch
+
+
+
+
+
+Purpose: Provide accurate medicine information to enhance user understanding.
+
+
+
+API Integration:
+
+
+
+
+
+Use RxNav API (https://rxnav.nlm.nih.gov/) for drug data.
+
+
+
+
+
+Endpoint: /REST/drugs.json?name={query} for autocomplete suggestions.
+
+
+
+Endpoint: /REST/rxcui/{id}/allproperties.json for detailed info (usage, category, generic name).
+
+
+
+Fetch on input (debounced to avoid excessive API calls, e.g., 300ms delay).
+
+
+
+Fallback: If API returns no data or fails, display a message: "No information found. Please verify the medicine name."
+
+
+
+Data Displayed:
+
+
+
+
+
+Usage: Brief description of the drug's purpose (e.g., "Treats high blood pressure").
+
+
+
+Category: Drug class (e.g., "Antihypertensive").
+
+
+
+Generic Name: Non-brand name (e.g., "Lisinopril" for Zestril).
+
+
+
+Behavior:
+
+
+
+
+
+Store fetched data with the medicine entry in localStorage.
+
+
+
+Display fetched data in the schedule table (see below).
+
+
+
+Handle API errors gracefully with user-friendly messages.
+
+3. Schedule Display
+
+
+
+
+
+Purpose: Show a clear, organized view of the user's medication schedule.
+
+
+
+Components:
+
+
+
+
+
+Dynamic Table:
+
+
+
+
+
+Columns: Time of Day, Medicine Name, Brief Description.
+
+
+
+Rows: One per medicine-time combination (e.g., "Aspirin at 8:00 AM" and "Aspirin at 6:00 PM" are separate rows).
+
+
+
+Sorted by time of day (ascending).
+
+
+
+Edit/Delete Options:
+
+
+
+
+
+Each row has an "Edit" button to pre-fill the form with existing data.
+
+
+
+Each row has a "Delete" button to remove the entry (with confirmation prompt).
+
+
+
+UI:
+
+
+
+
+
+Responsive table using Tailwind CSS (stacked layout on mobile).
+
+
+
+Zebra striping or borders for readability.
+
+
+
+Time formatted as HH:MM AM/PM.
+
+
+
+Brief description truncated to 100 characters with ellipsis (full text in PDF).
+
+
+
+Behavior:
+
+
+
+
+
+Load data from localStorage on page load.
+
+
+
+Update table dynamically after adding, editing, or deleting medicines.
+
+
+
+Handle empty state with message: "No medicines added yet."
+
+4. PDF Generation
+
+
+
+
+
+Purpose: Generate a clean, printable PDF schedule for offline use.
+
+
+
+Components:
+
+
+
+
+
+Button: "Download Schedule as PDF" (styled with Tailwind CSS).
+
+
+
+PDF Layout (using jsPDF):
+
+
+
+
+
+Header:
+
+
+
+
+
+Title: "Medication Schedule".
+
+
+
+Date: Current date (e.g., "August 3, 2025").
+
+
+
+Optional Patient Name: Input field above the button (stored in localStorage).
+
+
+
+Table:
+
+
+
+
+
+Columns: Time, Medicine, Description.
+
+
+
+Full descriptions (no truncation).
+
+
+
+Styled with borders and padding for clarity.
+
+
+
+Footer:
+
+
+
+
+
+Disclaimer: "Consult your doctor before making changes to your medication schedule."
+
+
+
+Timestamp: Generation date and time (e.g., "Generated on August 3, 2025, at 01:22 PM").
+
+
+
+Behavior:
+
+
+
+
+
+Use jsPDF to create a single-page PDF.
+
+
+
+Ensure table fits within A4 page size (auto-scaling if needed).
+
+
+
+Download automatically as medication_schedule_{date}.pdf.
+
+
+
+UI:
+
+
+
+
+
+Patient name input field (optional, defaults to "Patient").
+
+
+
+Button disabled if no medicines are added.
+
+
+
+Optional Features
+
+1. LocalStorage
+
+
+
+
+
+Implementation:
+
+
+
+
+
+Store medicines as a JSON array in localStorage under key medicineSchedule.
+
+
+
+Format: [{ id: UUID, name: string, times: string[], duration: number|null, info: { usage: string, category: string, genericName: string } }, ...].
+
+
+
+Load on page initialization to populate the schedule table.
+
+
+
+Update on every add/edit/delete action.
+
+
+
+Error Handling:
+
+
+
+
+
+Handle JSON parse errors (e.g., corrupted data) by resetting to empty array.
+
+
+
+Clear localStorage with a "Reset Schedule" button (with confirmation).
+
+2. Responsive Layout
+
+
+
+
+
+Implementation:
+
+
+
+
+
+Use Tailwind CSS responsive classes (e.g., sm:, md:) for layout adjustments.
+
+
+
+Form: Stacked on mobile, grid on desktop.
+
+
+
+Table: Stacked rows on mobile (each row as a card), tabular on desktop.
+
+
+
+PDF button and patient name input: Full-width on mobile, inline on desktop.
+
+
+
+Print Optimization:
+
+
+
+
+
+CSS media queries (@media print) to hide UI elements (e.g., buttons, form) during print.
+
+
+
+Ensure table scales properly for printing directly from the browser.
