@@ -294,6 +294,13 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadPdfButton.addEventListener('click', () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+
+        // Add Title
+        doc.setFontSize(22);
+        doc.text('Medication Schedule', 105, 20, null, null, 'center');
+        doc.setFontSize(12);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 180, 30, null, null, 'right');
+
         const patientName = patientNameInput.value || 'Patient';
         const patientDob = patientDobInput.value;
         const patientContact = patientContactInput.value;
@@ -307,40 +314,59 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.setFontSize(14);
         doc.text('Patient Information:', 20, yOffset);
         doc.setFontSize(12);
-        yOffset += 7;
-        doc.text(`Name: ${patientName}`, 20, yOffset);
+        yOffset += 10;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Name:', 20, yOffset);
+        doc.setFont('helvetica', 'normal');
+        doc.text(patientName, 50, yOffset);
         if (patientDob) {
             yOffset += 7;
-            doc.text(`Date of Birth: ${patientDob}`, 20, yOffset);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Date of Birth:', 20, yOffset);
+            doc.setFont('helvetica', 'normal');
+            doc.text(patientDob, 50, yOffset);
         }
         if (patientContact) {
             yOffset += 7;
-            doc.text(`Contact: ${patientContact}`, 20, yOffset);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Contact:', 20, yOffset);
+            doc.setFont('helvetica', 'normal');
+            doc.text(patientContact, 50, yOffset);
         }
         if (patientAllergies) {
             yOffset += 7;
-            doc.text(`Allergies: ${patientAllergies}`, 20, yOffset);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Allergies:', 20, yOffset);
+            doc.setFont('helvetica', 'normal');
+            doc.text(patientAllergies, 50, yOffset);
         }
 
         // Doctor Information
         if (doctorName || doctorContact) {
             yOffset += 15;
             doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
             doc.text('Doctor Information:', 20, yOffset);
             doc.setFontSize(12);
-            yOffset += 7;
+            yOffset += 10;
             if (doctorName) {
-                doc.text(`Name: ${doctorName}`, 20, yOffset);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Name:', 20, yOffset);
+                doc.setFont('helvetica', 'normal');
+                doc.text(doctorName, 50, yOffset);
             }
             if (doctorContact) {
                 yOffset += 7;
-                doc.text(`Contact: ${doctorContact}`, 20, yOffset);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Contact:', 20, yOffset);
+                doc.setFont('helvetica', 'normal');
+                doc.text(doctorContact, 50, yOffset);
             }
         }
 
         yOffset += 15; // Space before table
 
-        const tableColumn = ["Time", "Medicine", "Dosage", "Instructions", "Generic Name", "Category", "Description"];
+        const tableColumn = ["Time", "Medicine", "Dosage", "Instructions", "Duration (days)", "Generic Name", "Category", "Description"];
         const tableRows = [];
 
         const scheduleItems = [];
@@ -358,6 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.name,
                 item.dosage || 'N/A',
                 item.instructions || 'N/A',
+                item.duration || 'N/A',
                 item.info?.genericName || 'N/A',
                 item.info?.category || 'N/A',
                 item.info?.usage || 'No information available.'
@@ -365,19 +392,16 @@ document.addEventListener('DOMContentLoaded', () => {
             tableRows.push(medicineData);
         });
 
-        doc.autoTable(tableColumn, tableRows, {
+        doc.autoTable({
+            head: [tableColumn],
+            body: tableRows,
+            startY: yOffset,
             startY: yOffset,
             headStyles: { fillColor: [67, 56, 202], textColor: 255, fontSize: 10, fontStyle: 'bold' },
             bodyStyles: { fontSize: 9 },
             alternateRowStyles: { fillColor: [240, 240, 240] },
             margin: { top: 10, right: 20, bottom: 30, left: 20 },
             didDrawPage: function (data) {
-                // Header
-                doc.setFontSize(22);
-                doc.text('Medication Schedule', 105, 20, null, null, 'center');
-                doc.setFontSize(12);
-                doc.text(`Date: ${new Date().toLocaleDateString()}`, 180, 30, null, null, 'right');
-
                 // Footer
                 doc.setFontSize(8);
                 const pageHeight = doc.internal.pageSize.height;
