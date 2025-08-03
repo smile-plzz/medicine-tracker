@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const div = document.createElement('div');
         div.className = 'flex items-center mb-2';
         div.innerHTML = `
-            <input type="time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" name="medicine-time" required>
-            <button type="button" class="ml-2 text-red-500" onclick="removeTimeInput(this)">&times;</button>
+            <input type="time" class="form-input w-full" name="medicine-time" required>
+            <button type="button" class="ml-2 text-red-500 hover:text-red-700 text-xl" aria-label="Remove time input" onclick="removeTimeInput(this)">&times;</button>
         `;
         return div;
     };
@@ -36,6 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const medicineNameInput = document.getElementById('medicine-name');
     const autocompleteSuggestions = document.getElementById('autocomplete-suggestions');
+    const addMedicineButton = medicineForm.querySelector('button[type="submit"]');
+    const medicineNameError = document.createElement('p');
+    medicineNameError.className = 'error-message';
+    medicineNameInput.parentElement.appendChild(medicineNameError);
 
     const debounce = (func, delay) => {
         let timeout;
@@ -50,32 +54,17 @@ document.addEventListener('DOMContentLoaded', () => {
             autocompleteSuggestions.style.display = 'none';
             return;
         }
+        medicineNameInput.classList.add('loading');
         try {
-            console.log('Fetching autocomplete suggestions for:', query);
             const response = await fetch(`https://rxnav.nlm.nih.gov/REST/drugs.json?name=${query}`);
-            console.log('RxNav API response status:', response.status);
             const data = await response.json();
-            console.log('RxNav API full response data:', data);
 
-            if (!data.drugGroup) {
-                console.warn('RxNav API response: drugGroup is undefined', data);
-                autocompleteSuggestions.style.display = 'none';
-                return;
-            }
-            console.log('RxNav API drugGroup:', data.drugGroup);
-
-            if (!data.drugGroup.drugList) {
-                console.warn('RxNav API response: drugList is undefined', data.drugGroup);
-                autocompleteSuggestions.style.display = 'none';
-                return;
-            }
-            console.log('RxNav API drugList:', data.drugGroup.drugList);
-
-            const suggestions = data.drugGroup.drugList.drug?.map(d => d.name) || [];
-            console.log('Autocomplete suggestions:', suggestions);
+            const suggestions = data.drugGroup?.drugList?.drug?.map(d => d.name) || [];
             renderAutocomplete(suggestions.slice(0, 5));
         } catch (error) {
             console.error('Failed to fetch suggestions:', error);
+        } finally {
+            medicineNameInput.classList.remove('loading');
         }
     };
 
@@ -267,28 +256,60 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSchedule();
     };
 
-    medicineForm.addEventListener('submit', (e) => {
+    medicineForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const medicineName = document.getElementById('medicine-name').value;
+
+        let isValid = true;
+
+        // Validate Medicine Name
+        const medicineName = medicineNameInput.value.trim();
+        if (medicineName === '') {
+            medicineNameInput.classList.add('invalid');
+            medicineNameError.textContent = 'Medicine name is required.';
+            isValid = false;
+        } else {
+            medicineNameInput.classList.remove('invalid');
+            medicineNameError.textContent = '';
+        }
+
+        // Validate Medicine Times
         const timeInputs = document.querySelectorAll('input[name="medicine-time"]');
         const medicineTimes = Array.from(timeInputs).map(input => input.value).filter(Boolean);
+        if (medicineTimes.length === 0) {
+            timeInputs.forEach(input => input.classList.add('invalid'));
+            // Assuming there's a common error message area for times or the first time input
+            const timeError = document.createElement('p');
+            timeError.className = 'error-message';
+            timeError.textContent = 'At least one time is required.';
+            timeInputs[0].parentElement.appendChild(timeError);
+            isValid = false;
+        } else {
+            timeInputs.forEach(input => input.classList.remove('invalid'));
+            // Remove any existing time error messages
+            const existingTimeError = timeInputs[0].parentElement.querySelector('.error-message');
+            if (existingTimeError) existingTimeError.remove();
+        }
+
+        if (!isValid) {
+            return;
+        }
+
         const medicineDuration = document.getElementById('medicine-duration').value;
         const medicineDosage = document.getElementById('medicine-dosage').value;
         const medicineInstructions = document.getElementById('medicine-instructions').value;
-        if (medicineTimes.length > 0) {
-            console.log('Adding medicine:', {
-                name: medicineName,
-                times: medicineTimes,
-                duration: medicineDuration,
-                dosage: medicineDosage,
-                instructions: medicineInstructions
-            });
-            addMedicine(medicineName, medicineTimes, medicineDuration, medicineDosage, medicineInstructions);
+
+        addMedicineButton.disabled = true;
+        addMedicineButton.innerHTML = '<span class="loading-indicator"></span> Adding...';
+
+        try {
+            await addMedicine(medicineName, medicineTimes, medicineDuration, medicineDosage, medicineInstructions);
             medicineForm.reset();
-            console.log('Form reset after submission.');
             const timeInputsContainer = document.getElementById('time-inputs');
             timeInputsContainer.innerHTML = ''; // Clear dynamic times
             timeInputsContainer.appendChild(createTimeInput()); // Add back one
+        } finally {
+            addMedicineButton.disabled = false;
+            addMedicineButton.innerHTML = 'Add Medicine';
         }
     });
 
