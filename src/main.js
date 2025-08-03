@@ -161,17 +161,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         sortedSchedule.forEach(item => {
             const row = document.createElement('tr');
+            row.className = 'hover:bg-gray-50';
             row.innerHTML = `
-                <td class="border px-4 py-2">${item.time}</td>
-                <td class="border px-4 py-2">${item.name}</td>
-                <td class="border px-4 py-2">${item.dosage || 'N/A'}</td>
-                <td class="border px-4 py-2">${item.instructions || 'N/A'}</td>
-                <td class="border px-4 py-2">${item.info?.genericName || 'N/A'}</td>
-                <td class="border px-4 py-2">${item.info?.category || 'N/A'}</td>
-                <td class="border px-4 py-2">${item.info?.usage || 'No information available.'}</td>
-                <td class="border px-4 py-2">
-                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2" onclick="editMedicine('${item.id}')">Edit</button>
-                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="deleteMedicine('${item.id}')">Delete</button>
+                <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${item.time}</td>
+                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.name}</td>
+                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.dosage || 'N/A'}</td>
+                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.instructions || 'N/A'}</td>
+                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.info?.genericName || 'N/A'}</td>
+                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.info?.category || 'N/A'}</td>
+                <td class="px-4 py-2 text-sm text-gray-500">${item.info?.usage || 'No information available.'}</td>
+                <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
+                    <button class="text-indigo-600 hover:text-indigo-900 mr-2" onclick="editMedicine('${item.id}')" aria-label="Edit medicine"><i class="fas fa-edit"></i> Edit</button>
+                    <button class="text-red-600 hover:text-red-900" onclick="deleteMedicine('${item.id}')" aria-label="Delete medicine"><i class="fas fa-trash"></i> Delete</button>
                 </td>
             `;
             scheduleTableBody.appendChild(row);
