@@ -127,7 +127,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadPatientInfo();
 
-    let medicines = JSON.parse(localStorage.getItem('medicineSchedule')) || [];
+    const saveMedicinesToLocalStorage = (medicinesArray) => {
+        try {
+            localStorage.setItem('medicineSchedule', JSON.stringify(medicinesArray));
+            console.log('Medicine schedule saved to localStorage.');
+        } catch (lsError) {
+            console.error('Failed to save medicine schedule to localStorage:', lsError);
+        }
+    };
+
+    const loadMedicinesFromLocalStorage = () => {
+        try {
+            return JSON.parse(localStorage.getItem('medicineSchedule')) || [];
+        } catch (lsError) {
+            console.error('Failed to load medicine schedule from localStorage:', lsError);
+            return [];
+        }
+    };
+
+    let medicines = loadMedicinesFromLocalStorage();
 
     const renderSchedule = () => {
         scheduleTableBody.innerHTML = '';
@@ -182,12 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 info: medicineInfo
             };
             medicines.push(newMedicine);
-            try {
-                localStorage.setItem('medicineSchedule', JSON.stringify(medicines));
-                console.log('Medicine schedule saved to localStorage.');
-            } catch (lsError) {
-                console.error('Failed to save medicine schedule to localStorage:', lsError);
-            }
+            saveMedicinesToLocalStorage(medicines);
             renderSchedule();
             console.log('Medicine added and schedule rendered.');
         } catch (error) {
@@ -255,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.deleteMedicine = (id) => {
         medicines = medicines.filter(m => m.id !== id);
-        localStorage.setItem('medicineSchedule', JSON.stringify(medicines));
+        saveMedicinesToLocalStorage(medicines);
         renderSchedule();
     };
 
@@ -319,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         instructions: medicineInstructions,
                         info: medicineInfo
                     };
-                    localStorage.setItem('medicineSchedule', JSON.stringify(medicines));
+                    saveMedicinesToLocalStorage(medicines);
                     renderSchedule();
                 }
             } else {
