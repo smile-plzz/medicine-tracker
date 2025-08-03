@@ -9,7 +9,7 @@ This is a minimal, user-friendly web application to help users track their daily
 - **Dynamic Schedule Display:** Presents a clear, sortable table view of your medication schedule, allowing for easy overview and management.
 - **Printable PDF Generation:** Generates a professional, printable PDF schedule that includes patient and doctor information, along along with all medication details.
 - **Local Data Persistence:** All entered data, including patient and doctor information, is securely stored locally in your browser's `localStorage` for continuous access.
-- **Responsive User Interface:** Designed with Tailwind CSS to provide an optimal viewing and interaction experience across various screen sizes and devices.
+- **Responsive User Interface:** Designed with Tailwind CSS to provide an optimal viewing and interaction experience across various screen sizes and devices, including a responsive table view for mobile devices using `data-label` attributes.
 - **Comprehensive Information Fields:** Dedicated sections for patient details (name, date of birth, contact, allergies) and doctor information (name, contact) to be included in the PDF schedule.
 - **Reset Schedule:** Clears all saved medication data from local storage with user confirmation.
 
