@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("main.js script loaded and DOMContentLoaded event fired.");
     const medicineForm = document.getElementById('medicine-form');
     const scheduleTableBody = document.querySelector('#schedule-table tbody');
     const emptyScheduleMessage = document.getElementById('empty-schedule');
