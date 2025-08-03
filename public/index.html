@@ -13,7 +13,7 @@
         /* Custom form input styles */
         .form-input,
         .form-textarea {
-            @apply mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm transition-all duration-200 bg-gray-100;
+            @apply mt-1 block w-full rounded-lg border-gray-300 shadow-md focus:border-blue-500 focus:ring-blue-500 sm:text-sm transition-all duration-200 bg-white;
         }
 
         /* Custom button styles */
@@ -193,11 +193,14 @@
                     <div class="pt-4">
                         <button type="submit" id="add-medicine-submit-button" class="btn-primary">Add Medicine</button>
                     </div>
+                    <div id="success-message" class="hidden mt-4 p-3 bg-green-100 text-green-700 rounded-lg shadow-md text-center" role="alert">
+                        Medicine added/updated successfully!
+                    </div>
                 </form>
             </section>
 
             <!-- Schedule Display Section -->
-            <section class="bg-white p-6 rounded-2xl shadow-lg" aria-labelledby="schedule-heading">
+            <section class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300" aria-labelledby="schedule-heading">
                 <h2 id="schedule-heading" class="text-2xl font-bold text-gray-800 mb-4">Schedule</h2>
                 <div class="flex flex-col sm:flex-row justify-end items-center mb-4 space-y-2 sm:space-y-0 sm:space-x-2 no-print">
                                         <button id="download-pdf" class="inline-flex justify-center rounded-lg border border-transparent bg-green-600 py-2 px-4 text-sm font-medium text-white shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200">Download Schedule as PDF</button>

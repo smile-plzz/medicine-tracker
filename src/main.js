@@ -203,14 +203,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = document.createElement('tr');
             row.className = 'hover:bg-gray-50';
             row.innerHTML = `
-                <td data-label="Time" class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${item.time}</td>
-                <td data-label="Medicine Name" class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.name}</td>
-                <td data-label="Dosage" class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.dosage || 'N/A'}</td>
-                <td data-label="Instructions" class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.instructions || 'N/A'}</td>
-                <td data-label="Generic Name" class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.info?.genericName || 'N/A'}</td>
-                <td data-label="Category" class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${item.info?.category || 'N/A'}</td>
+                <td data-label="Time" class="px-4 py-2 text-sm font-medium text-gray-900">${item.time}</td>
+                <td data-label="Medicine Name" class="px-4 py-2 text-sm text-gray-900">${item.name}</td>
+                <td data-label="Dosage" class="px-4 py-2 text-sm text-gray-500">${item.dosage || 'N/A'}</td>
+                <td data-label="Instructions" class="px-4 py-2 text-sm text-gray-500">${item.instructions || 'N/A'}</td>
+                <td data-label="Generic Name" class="px-4 py-2 text-sm text-gray-500">${item.info?.genericName || 'N/A'}</td>
+                <td data-label="Category" class="px-4 py-2 text-sm text-gray-500">${item.info?.category || 'N/A'}</td>
                 <td data-label="Usage" class="px-4 py-2 text-sm text-gray-500">${item.info?.usage || 'No information available.'}</td>
-                <td data-label="Actions" class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
+                <td data-label="Actions" class="px-4 py-2 text-right text-sm font-medium">
                     <button class="text-indigo-600 hover:text-indigo-900 mr-2" onclick="editMedicine('${item.id}')" aria-label="Edit medicine"><i class="fas fa-edit"></i> Edit</button>
                     <button class="text-red-600 hover:text-red-900" onclick="deleteMedicine('${item.id}')" aria-label="Delete medicine"><i class="fas fa-trash"></i> Delete</button>
                 </td>
@@ -378,6 +378,15 @@ document.addEventListener('DOMContentLoaded', () => {
             timeInputsContainer.appendChild(createTimeInput()); // Add back one
             currentEditingMedicineId = null; // Reset editing state
             addMedicineButton.textContent = 'Add Medicine'; // Reset button text
+
+            // Show success message
+            const successMessage = document.getElementById('success-message');
+            if (successMessage) {
+                successMessage.classList.remove('hidden');
+                setTimeout(() => {
+                    successMessage.classList.add('hidden');
+                }, 3000); // Hide after 3 seconds
+            }
         } finally {
             addMedicineButton.disabled = false;
             addMedicineButton.innerHTML = 'Add Medicine';
