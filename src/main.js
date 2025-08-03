@@ -9,20 +9,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoModal = document.getElementById('info-modal');
     const closeModalButton = document.getElementById('close-modal');
 
-    infoButton.addEventListener('click', () => {
-        infoModal.classList.remove('hidden');
-    });
+    console.log("infoButton element:", infoButton);
+    console.log("infoModal element:", infoModal);
+    console.log("closeModalButton element:", closeModalButton);
 
-    closeModalButton.addEventListener('click', () => {
-        infoModal.classList.add('hidden');
-    });
+    if (infoButton) {
+        infoButton.addEventListener('click', () => {
+            infoModal.classList.remove('hidden');
+        });
+    } else {
+        console.error("Info button not found!");
+    }
+
+    if (closeModalButton) {
+        closeModalButton.addEventListener('click', () => {
+            infoModal.classList.add('hidden');
+        });
+    } else {
+        console.error("Close modal button not found!");
+    }
 
     // Close modal when clicking outside of it
-    infoModal.addEventListener('click', (e) => {
-        if (e.target === infoModal) {
-            infoModal.classList.add('hidden');
-        }
-    });
+    if (infoModal) {
+        infoModal.addEventListener('click', (e) => {
+            if (e.target === infoModal) {
+                infoModal.classList.add('hidden');
+            }
+        });
+    }
 
     resetScheduleButton.addEventListener('click', () => {
         if (confirm('Are you sure you want to clear the entire schedule? This action cannot be undone.')) {
