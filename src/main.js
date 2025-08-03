@@ -232,9 +232,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     };
 
+    let currentEditingMedicineId = null; // New variable to track the medicine being edited
+
     window.editMedicine = (id) => {
         const medicineToEdit = medicines.find(m => m.id === id);
         if (medicineToEdit) {
+            currentEditingMedicineId = id; // Set the ID of the medicine being edited
             document.getElementById('medicine-name').value = medicineToEdit.name;
             document.getElementById('medicine-duration').value = medicineToEdit.duration;
             document.getElementById('medicine-dosage').value = medicineToEdit.dosage || '';
@@ -246,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 timeInput.querySelector('input[name="medicine-time"]').value = time;
                 timeInputsContainer.appendChild(timeInput);
             });
-            deleteMedicine(id);
+            addMedicineButton.textContent = 'Update Medicine'; // Change button text
         }
     };
 
@@ -302,11 +305,33 @@ document.addEventListener('DOMContentLoaded', () => {
         addMedicineButton.innerHTML = '<span class="loading-indicator"></span> Adding...';
 
         try {
-            await addMedicine(medicineName, medicineTimes, medicineDuration, medicineDosage, medicineInstructions);
+            if (currentEditingMedicineId) {
+                // Update existing medicine
+                const index = medicines.findIndex(m => m.id === currentEditingMedicineId);
+                if (index !== -1) {
+                    const medicineInfo = await fetchMedicineInfo(medicineName);
+                    medicines[index] = {
+                        ...medicines[index],
+                        name: medicineName,
+                        times: medicineTimes,
+                        duration: medicineDuration,
+                        dosage: medicineDosage,
+                        instructions: medicineInstructions,
+                        info: medicineInfo
+                    };
+                    localStorage.setItem('medicineSchedule', JSON.stringify(medicines));
+                    renderSchedule();
+                }
+            } else {
+                // Add new medicine
+                await addMedicine(medicineName, medicineTimes, medicineDuration, medicineDosage, medicineInstructions);
+            }
             medicineForm.reset();
             const timeInputsContainer = document.getElementById('time-inputs');
             timeInputsContainer.innerHTML = ''; // Clear dynamic times
             timeInputsContainer.appendChild(createTimeInput()); // Add back one
+            currentEditingMedicineId = null; // Reset editing state
+            addMedicineButton.textContent = 'Add Medicine'; // Reset button text
         } finally {
             addMedicineButton.disabled = false;
             addMedicineButton.innerHTML = 'Add Medicine';
@@ -318,75 +343,66 @@ document.addEventListener('DOMContentLoaded', () => {
         const doc = new jsPDF();
 
         // Add Title
-        doc.setFontSize(22);
-        doc.text('Medication Schedule', 105, 20, null, null, 'center');
-        doc.setFontSize(12);
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 180, 30, null, null, 'right');
-
-        const patientName = patientNameInput.value || 'Patient';
-        const patientDob = patientDobInput.value;
-        const patientContact = patientContactInput.value;
-        const patientAllergies = patientAllergiesInput.value;
-        const doctorName = doctorNameInput.value;
-        const doctorContact = doctorContactInput.value;
-
-        let yOffset = 40;
-
-        // Patient Information
-        doc.setFontSize(14);
-        doc.text('Patient Information:', 20, yOffset);
-        doc.setFontSize(12);
-        yOffset += 10;
+        doc.setFontSize(24);
         doc.setFont('helvetica', 'bold');
-        doc.text('Name:', 20, yOffset);
-        doc.setFont('helvetica', 'normal');
-        doc.text(patientName, 50, yOffset);
-        if (patientDob) {
-            yOffset += 7;
-            doc.setFont('helvetica', 'bold');
-            doc.text('Date of Birth:', 20, yOffset);
-            doc.setFont('helvetica', 'normal');
-            doc.text(patientDob, 50, yOffset);
-        }
-        if (patientContact) {
-            yOffset += 7;
-            doc.setFont('helvetica', 'bold');
-            doc.text('Contact:', 20, yOffset);
-            doc.setFont('helvetica', 'normal');
-            doc.text(patientContact, 50, yOffset);
-        }
-        if (patientAllergies) {
-            yOffset += 7;
-            doc.setFont('helvetica', 'bold');
-            doc.text('Allergies:', 20, yOffset);
-            doc.setFont('helvetica', 'normal');
-            doc.text(patientAllergies, 50, yOffset);
-        }
+        doc.text('Medication Schedule', 105, 25, null, null, 'center');
 
-        // Doctor Information
-        if (doctorName || doctorContact) {
-            yOffset += 15;
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Generated by Medicine Tracker App', 105, 32, null, null, 'center');
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 180, 40, null, null, 'right');
+
+        let yOffset = 50;
+
+        const patientInfo = {
+            'Name': patientNameInput.value || 'N/A',
+            'Date of Birth': patientDobInput.value || 'N/A',
+            'Contact': patientContactInput.value || 'N/A',
+            'Allergies': patientAllergiesInput.value || 'N/A'
+        };
+
+        const doctorInfo = {
+            'Name': doctorNameInput.value || 'N/A',
+            'Contact': doctorContactInput.value || 'N/A'
+        };
+
+        // Patient Information Table
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Patient Information:', 20, yOffset);
+        yOffset += 5;
+        doc.autoTable({
+            startY: yOffset,
+            body: Object.entries(patientInfo),
+            theme: 'grid',
+            styles: { fontSize: 10, cellPadding: 2, overflow: 'linebreak' },
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 }, 1: { cellWidth: 'auto' } },
+            margin: { left: 20, right: 20 },
+            didDrawPage: function (data) {
+                yOffset = data.cursor.y + 10; // Update yOffset after table
+            }
+        });
+
+        // Doctor Information Table
+        if (doctorNameInput.value || doctorContactInput.value) {
             doc.setFontSize(14);
             doc.setFont('helvetica', 'bold');
             doc.text('Doctor Information:', 20, yOffset);
-            doc.setFontSize(12);
-            yOffset += 10;
-            if (doctorName) {
-                doc.setFont('helvetica', 'bold');
-                doc.text('Name:', 20, yOffset);
-                doc.setFont('helvetica', 'normal');
-                doc.text(doctorName, 50, yOffset);
-            }
-            if (doctorContact) {
-                yOffset += 7;
-                doc.setFont('helvetica', 'bold');
-                doc.text('Contact:', 20, yOffset);
-                doc.setFont('helvetica', 'normal');
-                doc.text(doctorContact, 50, yOffset);
-            }
+            yOffset += 5;
+            doc.autoTable({
+                startY: yOffset,
+                body: Object.entries(doctorInfo),
+                theme: 'grid',
+                styles: { fontSize: 10, cellPadding: 2, overflow: 'linebreak' },
+                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 }, 1: { cellWidth: 'auto' } },
+                margin: { left: 20, right: 20 },
+                didDrawPage: function (data) {
+                    yOffset = data.cursor.y + 10; // Update yOffset after table
+                }
+            });
         }
 
-        yOffset += 15; // Space before table
+        yOffset += 10; // Space before medicine table
 
         const tableColumn = ["Time", "Medicine", "Dosage", "Instructions", "Duration (days)", "Generic Name", "Category", "Description"];
         const tableRows = [];
@@ -418,17 +434,27 @@ document.addEventListener('DOMContentLoaded', () => {
             head: [tableColumn],
             body: tableRows,
             startY: yOffset,
-            startY: yOffset,
-            headStyles: { fillColor: [67, 56, 202], textColor: 255, fontSize: 10, fontStyle: 'bold' },
-            bodyStyles: { fontSize: 9 },
-            alternateRowStyles: { fillColor: [240, 240, 240] },
-            margin: { top: 10, right: 20, bottom: 30, left: 20 },
+            theme: 'striped',
+            headStyles: { fillColor: [30, 58, 138], textColor: 255, fontSize: 10, fontStyle: 'bold', halign: 'center' },
+            bodyStyles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
+            columnStyles: {
+                0: { cellWidth: 15 }, // Time
+                1: { cellWidth: 30 }, // Medicine
+                2: { cellWidth: 20 }, // Dosage
+                3: { cellWidth: 25 }, // Instructions
+                4: { cellWidth: 20 }, // Duration
+                5: { cellWidth: 25 }, // Generic Name
+                6: { cellWidth: 20 }, // Category
+                7: { cellWidth: 'auto' } // Description
+            },
+            margin: { top: 10, right: 10, bottom: 25, left: 10 },
             didDrawPage: function (data) {
                 // Footer
-                doc.setFontSize(8);
+                doc.setFontSize(7);
+                doc.setFont('helvetica', 'normal');
                 const pageHeight = doc.internal.pageSize.height;
-                doc.text('Disclaimer: Consult your doctor before making changes to your medication schedule.', 20, pageHeight - 20);
-                doc.text(`Generated on ${new Date().toLocaleString()}`, 20, pageHeight - 15);
+                doc.text('Disclaimer: Consult your doctor before making changes to your medication schedule.', 10, pageHeight - 15);
+                doc.text(`Generated on ${new Date().toLocaleString()}`, data.settings.margin.left, pageHeight - 10);
             }
         });
 
