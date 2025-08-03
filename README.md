@@ -12,6 +12,7 @@ This is a minimal, user-friendly web application to help users track their daily
 - **Responsive User Interface:** Designed with Tailwind CSS to provide an optimal viewing and interaction experience across various screen sizes and devices, including a responsive table view for mobile devices using `data-label` attributes.
 - **Comprehensive Information Fields:** Dedicated sections for patient details (name, date of birth, contact, allergies) and doctor information (name, contact) to be included in the PDF schedule.
 - **Reset Schedule:** Clears all saved medication data from local storage with user confirmation.
+- **Info Button and Modal:** Provides information about the application's usability and includes a message from the developer.
 
 ## Getting Started
 
