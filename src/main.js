@@ -4,6 +4,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const emptyScheduleMessage = document.getElementById('empty-schedule');
     const downloadPdfButton = document.getElementById('download-pdf');
     const resetScheduleButton = document.getElementById('reset-schedule');
+    const infoButton = document.getElementById('info-button');
+    const infoModal = document.getElementById('info-modal');
+    const closeModalButton = document.getElementById('close-modal');
+
+    infoButton.addEventListener('click', () => {
+        infoModal.classList.remove('hidden');
+    });
+
+    closeModalButton.addEventListener('click', () => {
+        infoModal.classList.add('hidden');
+    });
+
+    // Close modal when clicking outside of it
+    infoModal.addEventListener('click', (e) => {
+        if (e.target === infoModal) {
+            infoModal.classList.add('hidden');
+        }
+    });
 
     resetScheduleButton.addEventListener('click', () => {
         if (confirm('Are you sure you want to clear the entire schedule? This action cannot be undone.')) {
