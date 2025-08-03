@@ -60,6 +60,52 @@
         .loading-indicator {
             @apply inline-block animate-spin rounded-full h-4 w-4 border-2 border-t-2 border-gray-900;
         }
+
+        /* Responsive Table Styles */
+        @media (max-width: 640px) { /* Tailwind's sm breakpoint */
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            tr {
+                border: 1px solid #e2e8f0; /* Tailwind gray-200 */
+                margin-bottom: 0.75rem; /* Tailwind mb-3 */
+                border-radius: 0.5rem; /* Tailwind rounded-lg */
+                overflow: hidden;
+            }
+
+            td {
+                border: none;
+                position: relative;
+                padding-left: 50%; /* Space for the label */
+                text-align: left;
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+
+            td:before {
+                position: absolute;
+                top: 0.5rem;
+                left: 0.5rem;
+                width: 45%;
+                padding-right: 0.5rem;
+                white-space: nowrap;
+                font-weight: bold;
+                content: attr(data-label);
+            }
+
+            /* Specific adjustments for action buttons */
+            td:last-child {
+                text-align: center;
+                padding-left: 0.5rem;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-sans antialiased">
