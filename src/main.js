@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const medicineNameInput = document.getElementById('medicine-name');
     const autocompleteSuggestions = document.getElementById('autocomplete-suggestions');
-    const addMedicineButton = medicineForm.querySelector('button[type="submit"]');
+    const addMedicineButton = document.getElementById('add-medicine-submit-button');
     const medicineNameError = document.createElement('p');
     medicineNameError.className = 'error-message';
     medicineNameInput.parentElement.appendChild(medicineNameError);
