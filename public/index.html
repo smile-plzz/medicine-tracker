@@ -15,28 +15,75 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Custom form input styles */
+        /* Custom form input styles (plain CSS approximation of Tailwind classes) */
         .form-input,
         .form-textarea {
-            @apply mt-1 block w-full rounded-lg border-gray-300 shadow-md focus:border-blue-500 focus:ring-blue-500 sm:text-sm transition-all duration-200 bg-white;
+            margin-top: 0.25rem;
+            display: block;
+            width: 100%;
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db; /* gray-300 */
+            background: #ffffff;
+            font-size: 0.875rem; /* sm */
+            line-height: 1.25rem;
+            padding: 0.5rem 0.75rem;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #3b82f6; /* blue-500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
         }
 
         /* Custom button styles */
-        .btn-primary {
-            @apply inline-flex justify-center rounded-lg border border-transparent bg-gradient-to-r from-blue-600 to-blue-700 py-2 px-4 text-sm font-medium text-white shadow-md hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200;
+        .btn-base {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.5rem;
+            border: 1px solid transparent;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+            cursor: pointer;
         }
+        .btn-primary {
+            composes: btn-base;
+            background-image: linear-gradient(to right, #2563eb, #1d4ed8);
+            color: #ffffff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .btn-primary:hover { background-image: linear-gradient(to right, #1d4ed8, #1e40af); }
+        .btn-primary:focus { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); outline: none; }
 
         .btn-secondary {
-            @apply inline-flex justify-center rounded-lg border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200;
+            composes: btn-base;
+            background: #ffffff;
+            color: #374151; /* gray-700 */
+            border-color: #d1d5db; /* gray-300 */
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
+        .btn-secondary:hover { background: #f9fafb; }
+        .btn-secondary:focus { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); outline: none; }
 
         .btn-success {
-            @apply inline-flex justify-center rounded-lg border border-transparent bg-gradient-to-r from-green-600 to-green-700 py-2 px-4 text-sm font-medium text-white shadow-md hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200;
+            composes: btn-base;
+            background-image: linear-gradient(to right, #16a34a, #15803d);
+            color: #ffffff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
+        .btn-success:hover { background-image: linear-gradient(to right, #15803d, #166534); }
 
         .btn-danger {
-            @apply inline-flex justify-center rounded-lg border border-transparent bg-gradient-to-r from-red-600 to-red-700 py-2 px-4 text-sm font-medium text-white shadow-md hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200;
+            composes: btn-base;
+            background-image: linear-gradient(to right, #dc2626, #b91c1c);
+            color: #ffffff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
+        .btn-danger:hover { background-image: linear-gradient(to right, #b91c1c, #991b1b); }
 
         /* Print styles */
         @media print {
@@ -63,38 +110,49 @@
         /* Validation styles */
         .form-input.invalid,
         .form-textarea.invalid {
-            @apply border-red-500 ring-red-500;
+            border-color: #ef4444; /* red-500 */
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
         }
         .error-message {
-            @apply text-red-600 text-sm mt-1;
+            color: #dc2626; /* red-600 */
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
         }
 
         /* Loading indicator styles */
         .loading-indicator {
-            @apply inline-block animate-spin rounded-full h-4 w-4 border-2 border-t-2 border-gray-900;
+            display: inline-block;
+            width: 1rem; /* h-4 */
+            height: 1rem; /* w-4 */
+            border-radius: 9999px;
+            border: 2px solid rgba(17, 24, 39, 0.25); /* gray-900 at 25% */
+            border-top-color: #111827; /* gray-900 */
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Notification styles */
         .notification {
-            @apply fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-300;
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 50;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            transform: translateZ(0);
+            transition: all 0.3s ease;
+            color: #ffffff;
         }
-
-        .notification.success {
-            @apply bg-green-500 text-white;
-        }
-
-        .notification.error {
-            @apply bg-red-500 text-white;
-        }
-
-        .notification.info {
-            @apply bg-blue-500 text-white;
-        }
+        .notification.success { background: #22c55e; }
+        .notification.error { background: #ef4444; }
+        .notification.info { background: #3b82f6; }
 
         /* Card hover effects */
-        .card-hover {
-            @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
-        }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); transform: translateY(-4px); }
 
         /* Responsive Table Styles */
         @media (max-width: 640px) {
@@ -435,7 +493,7 @@
         </div>
     </div>
 
-    <script src="../src/main.js"></script>
+    <script type="module" src="../src/main.js"></script>
 
     <!-- Info Modal -->
     <div id="info-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
