@@ -64,7 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
         medicationHistoryContainer: document.getElementById('medication-history'),
         
         // Notifications
-        notificationContainer: document.getElementById('notification-container')
+        notificationContainer: document.getElementById('notification-container'),
+        themeToggle: document.getElementById('theme-toggle'),
+        importDataButton: document.getElementById('import-data'),
+        importFileInput: document.getElementById('import-file')
     };
 
     // Initialize the application
@@ -177,6 +180,13 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.closeSettingsButton.addEventListener('click', () => elements.settingsModal.classList.add('hidden'));
         elements.saveSettingsButton.addEventListener('click', saveSettings);
 
+        // Theme toggle
+        elements.themeToggle?.addEventListener('click', toggleTheme);
+
+        // Import data
+        elements.importDataButton?.addEventListener('click', () => elements.importFileInput.click());
+        elements.importFileInput?.addEventListener('change', handleImportFile);
+
         // Modal close on outside click
         [elements.infoModal, elements.settingsModal].forEach(modal => {
             modal.addEventListener('click', (e) => {
@@ -254,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`https://rxnav.nlm.nih.gov/REST/drugs.json?name=${encodeURIComponent(query)}`);
             const data = await response.json();
-            
+
             const suggestions = data.drugGroup?.drugList?.drug?.map(d => d.name) || [];
             renderAutocomplete(suggestions.slice(0, 5));
         } catch (error) {
@@ -660,10 +670,10 @@ document.addEventListener('DOMContentLoaded', () => {
     window.deleteMedicine = (id) => {
         if (confirm('Are you sure you want to delete this medicine?')) {
             const medicine = medicines.find(m => m.id === id);
-            medicines = medicines.filter(m => m.id !== id);
+        medicines = medicines.filter(m => m.id !== id);
             addToHistory('deleted', medicine);
             saveData();
-            renderSchedule();
+        renderSchedule();
             updateDashboard();
             showNotification('Medicine deleted successfully', 'success');
         }
@@ -698,6 +708,58 @@ document.addEventListener('DOMContentLoaded', () => {
         saveData();
         elements.settingsModal.classList.add('hidden');
         showNotification('Settings saved successfully', 'success');
+    }
+
+    // Theme management
+    function toggleTheme() {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        updateThemeIcon(isDark);
+    }
+
+    function updateThemeIcon(isDark) {
+        if (!elements.themeToggle) return;
+        const icon = elements.themeToggle.querySelector('i');
+        if (!icon) return;
+        icon.className = isDark ? 'fas fa-sun mr-2' : 'fas fa-moon mr-2';
+    }
+
+    // On load, apply saved theme
+    (function applySavedTheme() {
+        const saved = localStorage.getItem('theme');
+        const isDark = saved === 'dark';
+        if (isDark) document.documentElement.classList.add('dark');
+        updateThemeIcon(isDark);
+    })();
+
+    // Import data
+    function handleImportFile(event) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            try {
+                const json = JSON.parse(reader.result);
+                if (json.medicines && Array.isArray(json.medicines)) {
+                    medicines = json.medicines;
+                }
+                if (json.patientInfo) {
+                    elements.patientNameInput.value = json.patientInfo.name || '';
+                    elements.patientDobInput.value = json.patientInfo.dob || '';
+                    elements.patientContactInput.value = json.patientInfo.contact || '';
+                    elements.patientAllergiesInput.value = json.patientInfo.allergies || '';
+                }
+                saveData();
+                renderSchedule();
+                updateDashboard();
+                showNotification('Data imported successfully', 'success');
+            } catch (e) {
+                showNotification('Invalid import file', 'error');
+            }
+        };
+        reader.readAsText(file);
+        // Reset input so same file can be re-imported if needed
+        event.target.value = '';
     }
 
     // Notification system
@@ -798,10 +860,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Patient Information
         const patientInfo = getPatientInfo();
         if (patientInfo.name || patientInfo.dob || patientInfo.contact || patientInfo.allergies) {
-            doc.setFontSize(14);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Patient Information:', 20, yOffset);
-            yOffset += 5;
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Patient Information:', 20, yOffset);
+        yOffset += 5;
             
             const patientData = [
                 ['Name', patientInfo.name || 'N/A'],
@@ -810,17 +872,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 ['Allergies', patientInfo.allergies || 'N/A']
             ];
             
-            doc.autoTable({
-                startY: yOffset,
+        doc.autoTable({
+            startY: yOffset,
                 body: patientData,
-                theme: 'grid',
+            theme: 'grid',
                 styles: { fontSize: 10, cellPadding: 2 },
-                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 }, 1: { cellWidth: 'auto' } },
-                margin: { left: 20, right: 20 },
-                didDrawPage: function (data) {
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 }, 1: { cellWidth: 'auto' } },
+            margin: { left: 20, right: 20 },
+            didDrawPage: function (data) {
                     yOffset = data.cursor.y + 10;
-                }
-            });
+            }
+        });
         }
 
         // Doctor Information
@@ -857,7 +919,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const sortedSchedule = scheduleItems.sort((a, b) => a.time.localeCompare(b.time));
-        
+
         if (sortedSchedule.length > 0) {
             yOffset += 10;
             doc.setFontSize(14);
@@ -874,23 +936,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.duration || 'Indefinite'
             ]);
 
-            doc.autoTable({
+        doc.autoTable({
                 head: [tableHeaders],
-                body: tableRows,
-                startY: yOffset,
-                theme: 'striped',
+            body: tableRows,
+            startY: yOffset,
+            theme: 'striped',
                 headStyles: { fillColor: [30, 58, 138], textColor: 255, fontSize: 10, fontStyle: 'bold' },
                 bodyStyles: { fontSize: 8, cellPadding: 2 },
-                margin: { top: 10, right: 10, bottom: 25, left: 10 },
-                didDrawPage: function (data) {
-                    // Footer
-                    doc.setFontSize(7);
-                    doc.setFont('helvetica', 'normal');
-                    const pageHeight = doc.internal.pageSize.height;
-                    doc.text('Disclaimer: Consult your doctor before making changes to your medication schedule.', 10, pageHeight - 15);
-                    doc.text(`Generated on ${new Date().toLocaleString()}`, data.settings.margin.left, pageHeight - 10);
-                }
-            });
+            margin: { top: 10, right: 10, bottom: 25, left: 10 },
+            didDrawPage: function (data) {
+                // Footer
+                doc.setFontSize(7);
+                doc.setFont('helvetica', 'normal');
+                const pageHeight = doc.internal.pageSize.height;
+                doc.text('Disclaimer: Consult your doctor before making changes to your medication schedule.', 10, pageHeight - 15);
+                doc.text(`Generated on ${new Date().toLocaleString()}`, data.settings.margin.left, pageHeight - 10);
+            }
+        });
         }
 
         doc.save(`medication_schedule_${new Date().toISOString().slice(0, 10)}.pdf`);
