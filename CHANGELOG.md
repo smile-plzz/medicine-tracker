@@ -2,7 +2,15 @@
 
 All notable changes to the Medicine Tracker application will be documented in this file.
 
-## [3.7.1] - 2026-07-29
+## [3.8.0] - 2026-07-29
+
+### 🎨 Dark Mode Default & Layout Refinement
+- **Dark mode as default**: Changed theme default to dark mode. Light mode now requires explicit toggle.
+- **Layout tightening**: Reduced padding across all cards (p-6 → p-4/p-5), sections (space-y-8 → space-y-4/6), and main container (py-8 → py-4/6).
+- **Mobile layout fixes**: Improved grid responsiveness for dashboard cards (4→2 columns on mobile), reduced header padding, and tighter schedule table spacing.
+- **Component sizing**: Reduced icon sizes (12→10), ring size (14→12), timeline marker size (14→12), and timeline bar height (8→6px).
+- **Spacing consistency**: Unified gap sizes across grids (gap-5/6/8 → gap-4), reduced form field spacing, and compacted modal padding.
+- **Typography scale**: Reduced heading sizes in dashboard cards and section headers for better visual hierarchy.
 
 ### 🐛 Bug Fixes
 - **Service Worker Stale Cache**: Fixed "keeps loading" issue by switching to network-first fetch strategy, adding `skipWaiting()`/`clients.claim()` for immediate activation, and bumping cache name to invalidate old assets.

@@ -1128,13 +1128,13 @@ function openEmergencyModal() {
             }
 
             row.innerHTML = `
-                <td class="px-4 py-3 font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                <td class="px-3 py-2 font-semibold text-slate-900 dark:text-white whitespace-nowrap">
                     <div class="flex items-center gap-1.5">
                         <i class="fas fa-regular fa-clock text-blue-500 text-xs"></i>
                         <span>${format12HourTime(item.time)}</span>
                     </div>
                 </td>
-                <td class="px-4 py-3">
+                <td class="px-3 py-2">
                     <div class="flex items-center space-x-2.5">
                         <div class="w-7 h-7 rounded-lg ${colorMeta.bg} ${colorMeta.text} flex items-center justify-center text-xs flex-shrink-0">
                             <i class="fas ${formIcon}"></i>
@@ -1151,18 +1151,18 @@ function openEmergencyModal() {
                         </div>
                     </div>
                 </td>
-                <td class="px-4 py-3 text-slate-600 dark:text-slate-400">
+                <td class="px-3 py-2 text-slate-600 dark:text-slate-400">
                     <span class="font-medium">${item.dosage || '1 dose'}</span>
                     ${item.instructions ? `<div class="text-[11px] text-slate-400 truncate max-w-[150px]">${item.instructions}</div>` : ''}
                 </td>
-                <td class="px-4 py-3">
+                <td class="px-3 py-2">
                     ${stockDisplay}
                 </td>
-                <td class="px-4 py-3">
+                <td class="px-3 py-2">
                     ${statusBadge}
                 </td>
-                <td class="px-4 py-3 text-right whitespace-nowrap">
-                    <div class="flex items-center justify-end space-x-2">
+                <td class="px-3 py-2 text-right whitespace-nowrap">
+                    <div class="flex items-center justify-end space-x-1.5">
                         ${status !== 'taken' ? `
                             <button class="btn-success text-xs py-1 px-2.5 mark-taken-btn" data-id="${item.id}" data-time="${item.time}" title="Mark dose taken">
                                 <i class="fas fa-check"></i> <span class="hidden sm:inline">Taken</span>
@@ -1565,14 +1565,14 @@ function openEmergencyModal() {
                 slotMeds.map(m => `<div><strong>${m.name}</strong> (${m.dosage || '1 dose'})</div>`).join('') : '<span class="text-slate-300">-</span>';
 
             row.innerHTML = `
-                <td class="p-2.5 font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap bg-slate-50 dark:bg-slate-900">${slot}</td>
-                <td class="p-2.5">${medCellContent}</td>
-                <td class="p-2.5">${medCellContent}</td>
-                <td class="p-2.5">${medCellContent}</td>
-                <td class="p-2.5">${medCellContent}</td>
-                <td class="p-2.5">${medCellContent}</td>
-                <td class="p-2.5">${medCellContent}</td>
-                <td class="p-2.5">${medCellContent}</td>
+                <td class="p-2 font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap bg-slate-50 dark:bg-slate-900">${slot}</td>
+                <td class="p-2">${medCellContent}</td>
+                <td class="p-2">${medCellContent}</td>
+                <td class="p-2">${medCellContent}</td>
+                <td class="p-2">${medCellContent}</td>
+                <td class="p-2">${medCellContent}</td>
+                <td class="p-2">${medCellContent}</td>
+                <td class="p-2">${medCellContent}</td>
             `;
             tbody.appendChild(row);
         });
@@ -1611,7 +1611,7 @@ function openEmergencyModal() {
 
         medicationHistory.slice(0, 10).forEach(item => {
             const div = document.createElement('div');
-            div.className = 'flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl text-xs';
+            div.className = 'flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl text-xs';
             
             const icon = item.action === 'added' ? 'fa-plus text-purple-500' : 
                          item.action === 'taken' ? 'fa-check text-emerald-500' : 'fa-pen text-blue-500';
@@ -1783,7 +1783,7 @@ function markAsTaken(id, time) {
 
     (function applySavedTheme() {
         const saved = localStorage.getItem('theme');
-        const isDark = saved === 'dark';
+        const isDark = saved !== 'light';
         if (isDark) document.documentElement.classList.add('dark');
         updateThemeIcon(isDark);
     })();

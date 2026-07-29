@@ -24,7 +24,19 @@
   - Verified production build via `npm run build` (Exit code: 0, Built in 1.18s).
 - **Status**: Completed & pushed to master.
 
-## [2026-07-29 22:15:00] - Service Worker Cache Fix
+## [2026-07-29 23:00:00] - Version 3.8 Dark Mode Default & Layout Refinement
+- **Task**: Make dark mode the default, fix layout issues, and refine the overall design.
+- **Actions**:
+  - Changed theme default to dark mode: `applySavedTheme()` now defaults to dark unless user explicitly chose light.
+  - Updated theme toggle icon to show sun icon by default (indicating dark mode is active).
+  - Updated `meta theme-color` to `#0f172a` for dark mode default.
+  - Reduced padding across all cards (p-6 → p-4/p-5), sections (space-y-8 → space-y-4/6), and main container (py-8 → py-4/6).
+  - Fixed mobile layout: improved grid responsiveness for dashboard cards, reduced header padding, tighter schedule table spacing.
+  - Reduced component sizing: icon sizes (12→10), ring size (14→12), timeline marker (14→12), timeline bar height (8→6px).
+  - Unified gap sizes across grids, reduced form field spacing, and compacted modal padding.
+  - Reduced typography scale in dashboard cards and section headers.
+  - Verified production build via `npx parcel build` (Exit code: 0).
+- **Status**: Completed and pushed.
 - **Task**: Fix local deployment "keeps loading" issue caused by stale service worker cache.
 - **Actions**:
   - Updated `src/sw.js` to use network-first fetch strategy (fetch first, cache as fallback) instead of cache-first.
