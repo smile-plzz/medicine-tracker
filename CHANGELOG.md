@@ -2,6 +2,20 @@
 
 All notable changes to the Medicine Tracker application will be documented in this file.
 
+## [2.5.0] - 2026-07-29
+
+### ✨ Added & Enhanced
+- **Modern Glassmorphism UI**: Redesigned UI featuring `Plus Jakarta Sans` Google Font, glowing pill swatches, backdrop blur glass cards, dark mode integration, and micro-interactions.
+- **Pill Form & Color Customization**: Customizable pill forms (Tablet, Capsule, Liquid, Injection, Drops, Topical) and color swatches (Blue, Emerald, Purple, Amber, Rose, Cyan, Slate).
+- **Inventory & Refill Stock Tracking**: Real-time pill stock auto-decrement upon marking dose taken, customizable refill threshold alerts, and prominent low stock banner.
+- **Web Audio Reminder Alarm Chime**: Dual-tone synthesized Web Audio chime for dose reminders with toggle control.
+- **iCalendar (.ics) Sync Export**: Export daily recurring medication schedules directly to Apple Calendar, Google Calendar, or Microsoft Outlook.
+- **7-Day Adherence Analytics Bar Chart**: Visual past 7-day adherence history chart and SVG progress ring.
+- **Drug Info Modal (RxNav)**: Interactive modal retrieving NIH RxNav official generic name, drug category, and definitional features.
+- **12-Hour AM/PM Formatting**: Clean 12-hour formatted time displays with 24-hour underlying schedule management.
+- **Interactive Due Dose Modal**: Pop-up alert when a dose is due with "Take Now" and "Snooze (10m)" options.
+- **Timezone Fixes**: Resolved local date string formatting issues across timezone boundaries.
+
 ## [2.0.0] - 2024-01-XX
 
 ### ✨ Added

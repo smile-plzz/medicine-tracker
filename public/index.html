@@ -6,574 +6,771 @@
     <title>Medicine Tracker - Smart Medication Management</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="manifest" href="manifest.json">
-    <meta name="description" content="Smart medication management application with reminders, tracking, and comprehensive features">
-    <meta name="keywords" content="medicine, medication, tracker, health, reminders, schedule, healthcare">
+    <meta name="description" content="Smart medication management application with reminders, tracking, stock alerts, and comprehensive health tools">
+    <meta name="keywords" content="medicine, medication, tracker, health, reminders, schedule, healthcare, rxnav">
     <meta name="author" content="Md. Ismail Hossain">
     <meta name="theme-color" content="#3b82f6">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
+        :root {
+            --font-primary: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
         /* Dark theme support */
         :root.dark body {
-            background: linear-gradient(to bottom right, #0b1220, #111827);
-            color: #e5e7eb;
+            background: linear-gradient(135deg, #090d16 0%, #0f172a 100%);
+            color: #f1f5f9;
         }
-        :root.dark .bg-white { background-color: #0f172a; }
-        :root.dark .text-gray-800 { color: #e5e7eb; }
-        :root.dark .text-gray-900 { color: #f3f4f6; }
-        :root.dark .text-gray-700 { color: #d1d5db; }
-        :root.dark .bg-gray-50 { background-color: #111827; }
-        :root.dark .border-gray-200 { border-color: #1f2937; }
-        :root.dark .shadow-lg, :root.dark .shadow-md { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5), 0 4px 6px -2px rgba(0,0,0,0.4); }
-        :root.dark .form-input, :root.dark .form-textarea { background: #0b1220; color: #e5e7eb; border-color: #374151; }
-        :root.dark .btn-secondary { background: #0b1220; color: #e5e7eb; border-color: #374151; }
-        :root.dark .bg-gray-600 { background-color: #111827; }
-        :root.dark .bg-opacity-50 { background-color: rgba(0,0,0,0.6); }
-        /* Custom form input styles (plain CSS approximation of Tailwind classes) */
+        :root.dark .glass-card {
+            background: rgba(15, 23, 42, 0.85);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        :root.dark .text-gray-800 { color: #f1f5f9; }
+        :root.dark .text-gray-900 { color: #ffffff; }
+        :root.dark .text-gray-700 { color: #cbd5e1; }
+        :root.dark .text-gray-600 { color: #94a3b8; }
+        :root.dark .bg-gray-50 { background-color: #0b1329; }
+        :root.dark .border-gray-200 { border-color: #1e293b; }
+        :root.dark .form-input, :root.dark .form-textarea, :root.dark .form-select {
+            background: #090d16;
+            color: #f1f5f9;
+            border-color: #334155;
+        }
+        :root.dark .btn-secondary {
+            background: #1e293b;
+            color: #f1f5f9;
+            border-color: #334155;
+        }
+        :root.dark .btn-secondary:hover {
+            background: #334155;
+        }
+
+        /* Modern Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Form elements */
         .form-input,
-        .form-textarea {
+        .form-textarea,
+        .form-select {
             margin-top: 0.25rem;
             display: block;
             width: 100%;
-            border-radius: 0.5rem;
-            border: 1px solid #d1d5db; /* gray-300 */
+            border-radius: 0.625rem;
+            border: 1px solid #e2e8f0;
             background: #ffffff;
-            font-size: 0.875rem; /* sm */
+            font-size: 0.875rem;
             line-height: 1.25rem;
-            padding: 0.5rem 0.75rem;
-            transition: box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            padding: 0.625rem 0.875rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
         }
         .form-input:focus,
-        .form-textarea:focus {
+        .form-textarea:focus,
+        .form-select:focus {
             outline: none;
-            border-color: #3b82f6; /* blue-500 */
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
         }
 
-        /* Custom button styles */
+        /* Custom buttons */
         .btn-base {
             display: inline-flex;
             justify-content: center;
             align-items: center;
-            border-radius: 0.5rem;
+            border-radius: 0.625rem;
             border: 1px solid transparent;
             padding: 0.5rem 1rem;
             font-size: 0.875rem;
-            font-weight: 500;
-            transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+            font-weight: 600;
+            transition: all 0.2s ease;
             cursor: pointer;
+            user-select: none;
+        }
+        .btn-base:active {
+            transform: scale(0.98);
         }
         .btn-primary {
             composes: btn-base;
-            background-image: linear-gradient(to right, #2563eb, #1d4ed8);
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: #ffffff;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
         }
-        .btn-primary:hover { background-image: linear-gradient(to right, #1d4ed8, #1e40af); }
-        .btn-primary:focus { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); outline: none; }
-
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+        }
         .btn-secondary {
             composes: btn-base;
             background: #ffffff;
-            color: #374151; /* gray-700 */
-            border-color: #d1d5db; /* gray-300 */
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            color: #334155;
+            border-color: #cbd5e1;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
-        .btn-secondary:hover { background: #f9fafb; }
-        .btn-secondary:focus { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); outline: none; }
-
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
         .btn-success {
             composes: btn-base;
-            background-image: linear-gradient(to right, #16a34a, #15803d);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: #ffffff;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
         }
-        .btn-success:hover { background-image: linear-gradient(to right, #15803d, #166534); }
-
+        .btn-success:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+        .btn-purple {
+            composes: btn-base;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+        }
+        .btn-purple:hover {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        }
         .btn-danger {
             composes: btn-base;
-            background-image: linear-gradient(to right, #dc2626, #b91c1c);
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             color: #ffffff;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
         }
-        .btn-danger:hover { background-image: linear-gradient(to right, #b91c1c, #991b1b); }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
 
-        /* Print styles */
+        /* Pill badges */
+        .pill-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.625rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        /* Progress ring SVG */
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.5s ease-in-out;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        /* Print optimization */
         @media print {
-            .no-print {
-                display: none !important;
-            }
-            body {
-                background-color: #fff !important;
-            }
-            .container {
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            table {
-                width: 100% !important;
-            }
-            th, td {
-                border: 1px solid #000 !important;
-                padding: 8px !important;
-            }
+            .no-print { display: none !important; }
+            body { background: #ffffff !important; color: #000000 !important; }
+            .glass-card { box-shadow: none !important; border: 1px solid #ccc !important; }
         }
 
-        /* Validation styles */
-        .form-input.invalid,
-        .form-textarea.invalid {
-            border-color: #ef4444; /* red-500 */
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
+        /* Notifications Toast */
+        .notification-toast {
+            position: fixed;
+            top: 1.25rem;
+            right: 1.25rem;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            border-radius: 0.75rem;
+            color: #ffffff;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+            animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Validation invalid */
+        .form-input.invalid, .form-textarea.invalid, .form-select.invalid {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
         }
         .error-message {
-            color: #dc2626; /* red-600 */
-            font-size: 0.875rem;
+            color: #ef4444;
+            font-size: 0.75rem;
             margin-top: 0.25rem;
+            font-weight: 500;
         }
 
-        /* Loading indicator styles */
-        .loading-indicator {
+        .loading-spinner {
             display: inline-block;
-            width: 1rem; /* h-4 */
-            height: 1rem; /* w-4 */
-            border-radius: 9999px;
-            border: 2px solid rgba(17, 24, 39, 0.25); /* gray-900 at 25% */
-            border-top-color: #111827; /* gray-900 */
-            animation: spin 1s linear infinite;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Notification styles */
-        .notification {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 50;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-            transform: translateZ(0);
-            transition: all 0.3s ease;
-            color: #ffffff;
-        }
-        .notification.success { background: #22c55e; }
-        .notification.error { background: #ef4444; }
-        .notification.info { background: #3b82f6; }
-
-        /* Card hover effects */
-        .card-hover { transition: all 0.3s ease; }
-        .card-hover:hover { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); transform: translateY(-4px); }
-
-        /* Responsive Table Styles */
-        @media (max-width: 640px) {
-            table, thead, tbody, th, td, tr {
-                display: block;
-            }
-
-            thead tr {
-                position: absolute;
-                top: -9999px;
-                left: -9999px;
-            }
-
-            tr {
-                border: 1px solid #e2e8f0;
-                margin-bottom: 0.75rem;
-                border-radius: 0.5rem;
-                overflow: hidden;
-            }
-
-            td {
-                border: none;
-                position: relative;
-                padding-left: 50%;
-                text-align: left;
-                padding-top: 0.5rem;
-                padding-bottom: 0.5rem;
-            }
-
-            td:before {
-                position: absolute;
-                top: 0.5rem;
-                left: 0.5rem;
-                width: 45%;
-                padding-right: 0.5rem;
-                white-space: nowrap;
-                font-weight: bold;
-                content: attr(data-label);
-            }
-
-            td:last-child {
-                text-align: center;
-                padding-left: 0.5rem;
-            }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        /* Animation classes */
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .slide-in {
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(0); }
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        :root.dark ::-webkit-scrollbar-thumb { background: #334155; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 font-sans antialiased min-h-screen">
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen text-slate-800 antialiased">
     <!-- Notification Container -->
     <div id="notification-container"></div>
 
-    <!-- Header with improved design -->
-    <header class="bg-white shadow-lg border-b border-gray-200">
+    <!-- Top Navigation Header -->
+    <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/80 dark:border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center py-6">
-                <div class="flex items-center space-x-4">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-pills text-3xl text-blue-600"></i>
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20 text-white">
+                        <i class="fas fa-capsules text-xl"></i>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Medicine Tracker</h1>
-                        <p class="text-sm text-gray-600">Smart medication management</p>
+                        <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                            Medicine Tracker
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold">v2.5 Pro</span>
+                        </h1>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Intelligent Rx Tracking & Schedule Manager</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <button id="info-button" class="btn-secondary">
-                        <i class="fas fa-info-circle mr-2"></i>Info
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <button id="sound-toggle" class="btn-secondary text-xs sm:text-sm py-2 px-3" aria-label="Toggle Sound Reminders">
+                        <i class="fas fa-volume-up text-blue-500 mr-1.5" id="sound-icon"></i>
+                        <span class="hidden sm:inline">Audio On</span>
                     </button>
-                    <button id="settings-button" class="btn-secondary">
-                        <i class="fas fa-cog mr-2"></i>Settings
+                    <button id="info-button" class="btn-secondary text-xs sm:text-sm py-2 px-3">
+                        <i class="fas fa-circle-info text-slate-500 mr-1.5"></i>
+                        <span class="hidden sm:inline">Info</span>
                     </button>
-                    <button id="theme-toggle" class="btn-secondary" aria-label="Toggle theme">
-                        <i class="fas fa-moon mr-2"></i>Theme
+                    <button id="settings-button" class="btn-secondary text-xs sm:text-sm py-2 px-3">
+                        <i class="fas fa-gear text-slate-500 mr-1.5"></i>
+                        <span class="hidden sm:inline">Settings</span>
+                    </button>
+                    <button id="theme-toggle" class="btn-secondary text-xs sm:text-sm py-2 px-3" aria-label="Toggle Theme">
+                        <i class="fas fa-moon text-indigo-500 mr-1.5" id="theme-icon"></i>
+                        <span class="hidden sm:inline">Theme</span>
                     </button>
                 </div>
             </div>
         </div>
     </header>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Stats Dashboard -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 no-print">
-            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-pills text-2xl text-blue-600"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Total Medicines</p>
-                        <p id="total-medicines" class="text-2xl font-bold text-gray-900">0</p>
-                    </div>
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        <!-- Stock / Low Inventory Warning Banner (Shown dynamically when any medicine is low on pills) -->
+        <div id="low-stock-banner" class="hidden no-print bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex items-center justify-between text-amber-900 dark:text-amber-200">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                    <i class="fas fa-triangle-exclamation text-lg"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm">Refill Alert</h4>
+                    <p id="low-stock-text" class="text-xs text-amber-800 dark:text-amber-300">Some medications are low in stock and need refilling soon.</p>
                 </div>
             </div>
-            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-clock text-2xl text-green-600"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Today's Doses</p>
-                        <p id="today-doses" class="text-2xl font-bold text-gray-900">0</p>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-check-circle text-2xl text-purple-600"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Adherence Rate</p>
-                        <p id="adherence-rate" class="text-2xl font-bold text-gray-900">0%</p>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-calendar-alt text-2xl text-orange-600"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Next Dose</p>
-                        <p id="next-dose" class="text-lg font-bold text-gray-900">--:--</p>
-                    </div>
-                </div>
-            </div>
+            <button id="dismiss-stock-banner" class="text-amber-700 dark:text-amber-400 hover:text-amber-900 text-sm">
+                <i class="fas fa-xmark"></i>
+            </button>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column: Patient Info & Add Medicine -->
-            <div class="lg:col-span-1 space-y-6">
-                <!-- Patient Information Section -->
-                <section class="bg-white rounded-xl shadow-lg p-6 no-print card-hover" aria-labelledby="patient-info-heading">
-                    <h2 id="patient-info-heading" class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <i class="fas fa-user mr-2 text-blue-600"></i>Patient Information
-                    </h2>
-                    <div class="space-y-4">
-                        <div>
-                            <label for="patient-name" class="block text-sm font-medium text-gray-700 mb-1">Patient Name</label>
-                            <input type="text" id="patient-name" class="form-input" placeholder="Enter patient's name">
-                        </div>
-                        <div>
-                            <label for="patient-dob" class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                            <input type="date" id="patient-dob" class="form-input">
-                        </div>
-                        <div>
-                            <label for="patient-contact" class="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
-                            <input type="tel" id="patient-contact" class="form-input" placeholder="e.g., 123-456-7890">
-                    </div>
-                    <div>
-                            <label for="patient-allergies" class="block text-sm font-medium text-gray-700 mb-1">Allergies</label>
-                            <textarea id="patient-allergies" class="form-textarea" rows="2" placeholder="e.g., Penicillin, Peanuts"></textarea>
-                    </div>
+        <!-- Metric Dashboard Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 no-print" aria-label="Dashboard Statistics">
+            <!-- Total Medicines Card -->
+            <div class="glass-card p-5 card-hover flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Medicines</p>
+                    <p id="total-medicines" class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">0</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1"><span id="active-prescriptions-count">0</span> active protocols</p>
                 </div>
-            </section>
-
-            <!-- Doctor Information Section -->
-                <section class="bg-white rounded-xl shadow-lg p-6 no-print card-hover" aria-labelledby="doctor-info-heading">
-                    <h2 id="doctor-info-heading" class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <i class="fas fa-user-md mr-2 text-green-600"></i>Doctor Information
-                    </h2>
-                    <div class="space-y-4">
-                    <div>
-                        <label for="doctor-name" class="block text-sm font-medium text-gray-700 mb-1">Doctor's Name</label>
-                            <input type="text" id="doctor-name" class="form-input" placeholder="Enter doctor's name">
-                    </div>
-                    <div>
-                            <label for="doctor-contact" class="block text-sm font-medium text-gray-700 mb-1">Doctor's Contact</label>
-                            <input type="tel" id="doctor-contact" class="form-input" placeholder="e.g., 123-456-7890">
-                    </div>
+                <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl">
+                    <i class="fas fa-pills"></i>
                 </div>
-            </section>
-
-            <!-- Add Medicine Section -->
-                <section class="bg-white rounded-xl shadow-lg p-6 no-print card-hover" aria-labelledby="add-medicine-heading">
-                    <h2 id="add-medicine-heading" class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <i class="fas fa-plus-circle mr-2 text-purple-600"></i>Add Medicine
-                    </h2>
-                <form id="medicine-form" class="space-y-4">
-                        <div>
-                            <label for="medicine-name" class="block text-sm font-medium text-gray-700 mb-1">Medicine Name</label>
-                            <div class="relative">
-                                <input type="text" id="medicine-name" class="form-input" required placeholder="Start typing medicine name...">
-                                <div id="autocomplete-suggestions" class="absolute z-10 w-full bg-white border border-gray-200 rounded-md shadow-lg mt-1 max-h-48 overflow-y-auto" style="display: none;"></div>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Time(s)</label>
-                            <div id="time-inputs" class="space-y-2">
-                                <div class="flex items-center">
-                                    <input type="time" class="form-input flex-1" name="medicine-time" required>
-                                <button type="button" class="ml-2 text-red-500 hover:text-red-700 text-xl" aria-label="Remove time input" onclick="removeTimeInput(this)">&times;</button>
-                            </div>
-                        </div>
-                            <button type="button" id="add-time-btn" class="mt-2 btn-secondary text-sm">
-                                <i class="fas fa-plus mr-1"></i>Add another time
-                            </button>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="medicine-duration" class="block text-sm font-medium text-gray-700 mb-1">Duration (days)</label>
-                                <input type="number" id="medicine-duration" class="form-input" placeholder="Indefinite">
-                        </div>
-                        <div>
-                            <label for="medicine-dosage" class="block text-sm font-medium text-gray-700 mb-1">Dosage</label>
-                                <input type="text" id="medicine-dosage" class="form-input" placeholder="e.g., 1 pill, 5ml">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label for="medicine-instructions" class="block text-sm font-medium text-gray-700 mb-1">Instructions</label>
-                            <input type="text" id="medicine-instructions" class="form-input" placeholder="e.g., with food, before bed">
-                        </div>
-
-                        <div>
-                            <label for="medicine-reminder" class="block text-sm font-medium text-gray-700 mb-1">Reminder</label>
-                            <select id="medicine-reminder" class="form-input">
-                                <option value="5">5 minutes before</option>
-                                <option value="10">10 minutes before</option>
-                                <option value="15">15 minutes before</option>
-                                <option value="30">30 minutes before</option>
-                                <option value="0">No reminder</option>
-                            </select>
-                    </div>
-
-                        <button type="submit" id="add-medicine-submit-button" class="btn-primary w-full">
-                            <i class="fas fa-plus mr-2"></i>Add Medicine
-                        </button>
-                        
-                        <div id="success-message" class="hidden mt-4 p-3 bg-green-100 text-green-700 rounded-lg text-center" role="alert">
-                            <i class="fas fa-check-circle mr-2"></i>Medicine added successfully!
-                    </div>
-                </form>
-            </section>
             </div>
 
-            <!-- Right Column: Schedule Display -->
-            <div class="lg:col-span-2">
-                <section class="bg-white rounded-xl shadow-lg p-6 card-hover" aria-labelledby="schedule-heading">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-                        <h2 id="schedule-heading" class="text-xl font-bold text-gray-800 flex items-center">
-                            <i class="fas fa-calendar-check mr-2 text-indigo-600"></i>Medication Schedule
-                        </h2>
-                        <div class="flex flex-wrap gap-2 mt-4 sm:mt-0">
-                            <div class="relative">
-                                <input type="text" id="search-medicine" class="form-input pl-10 pr-4" placeholder="Search medicines...">
-                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            </div>
-                            <select id="filter-time" class="form-input">
-                                <option value="">All times</option>
-                                <option value="morning">Morning</option>
-                                <option value="afternoon">Afternoon</option>
-                                <option value="evening">Evening</option>
-                                <option value="night">Night</option>
-                            </select>
-                            <button id="download-pdf" class="btn-success">
-                                <i class="fas fa-download mr-2"></i>PDF
-                            </button>
-                            <button id="export-data" class="btn-secondary">
-                                <i class="fas fa-file-export mr-2"></i>Export
-                            </button>
-                            <input id="import-file" type="file" accept="application/json" class="hidden" />
-                            <button id="import-data" class="btn-secondary">
-                                <i class="fas fa-file-import mr-2"></i>Import
-                            </button>
-                            <button id="reset-schedule" class="btn-danger">
-                                <i class="fas fa-trash mr-2"></i>Reset
-                            </button>
-                        </div>
+            <!-- Today's Doses Card -->
+            <div class="glass-card p-5 card-hover flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Today's Doses</p>
+                    <p id="today-doses" class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">0</p>
+                    <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-medium"><span id="taken-doses-count">0</span> completed today</p>
                 </div>
+                <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+            </div>
 
-                <div class="overflow-x-auto">
-                    <table id="schedule-table" class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medicine</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dosage</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Instructions</th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <!-- Schedule rows will be inserted here -->
-                        </tbody>
-                    </table>
+            <!-- Adherence Rate Ring Card -->
+            <div class="glass-card p-5 card-hover flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Adherence Rate</p>
+                    <p id="adherence-rate" class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">0%</p>
+                    <p class="text-xs text-purple-600 dark:text-purple-400 mt-1 font-medium" id="adherence-label">No doses scheduled</p>
                 </div>
-                    <div id="empty-schedule" class="text-center py-12 text-gray-500">
-                        <i class="fas fa-pills text-4xl mb-4 text-gray-300"></i>
-                        <p class="text-lg font-medium">No medicines added yet</p>
-                        <p class="text-sm">Start by adding your first medication above!</p>
+                <div class="relative w-14 h-14 flex items-center justify-center">
+                    <svg class="w-14 h-14" viewBox="0 0 36 36">
+                        <path class="text-slate-200 dark:text-slate-800" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path id="adherence-ring" class="progress-ring-circle text-purple-600" stroke-width="3.5" stroke-dasharray="100, 100" stroke-dashoffset="100" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <i class="fas fa-heart-pulse text-purple-600 absolute text-sm"></i>
+                </div>
+            </div>
+
+            <!-- Next Dose Card -->
+            <div class="glass-card p-5 card-hover flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Next Scheduled Dose</p>
+                    <p id="next-dose" class="text-xl font-bold text-slate-900 dark:text-white mt-1 truncate">--:--</p>
+                    <p id="next-dose-med-name" class="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">No pending doses</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Workspace: Two-Column Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Sidebar Column (4 Cols): Patient Info, Doctor Info & Add Medicine Form -->
+            <div class="lg:col-span-4 space-y-6">
+                
+                <!-- Patient Profile Card -->
+                <section class="glass-card p-6 no-print card-hover" aria-labelledby="patient-info-heading">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 id="patient-info-heading" class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fas fa-user-circle text-blue-600"></i>Patient Info
+                        </h2>
+                        <button id="toggle-patient-details" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">
+                            Toggle Details
+                        </button>
+                    </div>
+                    <div id="patient-fields" class="space-y-3">
+                        <div>
+                            <label for="patient-name" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Patient Name</label>
+                            <input type="text" id="patient-name" class="form-input" placeholder="e.g., John Doe">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="patient-dob" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Date of Birth</label>
+                                <input type="date" id="patient-dob" class="form-input">
+                            </div>
+                            <div>
+                                <label for="patient-contact" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Contact No.</label>
+                                <input type="tel" id="patient-contact" class="form-input" placeholder="Phone #">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="patient-allergies" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Allergies / Conditions</label>
+                            <textarea id="patient-allergies" class="form-textarea" rows="2" placeholder="e.g., Penicillin allergy, Diabetes"></textarea>
+                        </div>
                     </div>
                 </section>
 
-                <!-- Medication History Section -->
-                <section class="bg-white rounded-xl shadow-lg p-6 mt-6 card-hover no-print" aria-labelledby="history-heading">
-                    <h2 id="history-heading" class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <i class="fas fa-history mr-2 text-orange-600"></i>Medication History
+                <!-- Doctor Information Card -->
+                <section class="glass-card p-6 no-print card-hover" aria-labelledby="doctor-info-heading">
+                    <h2 id="doctor-info-heading" class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                        <i class="fas fa-user-md text-emerald-600"></i>Physician Information
                     </h2>
-                    <div id="medication-history" class="space-y-3">
-                        <!-- History items will be inserted here -->
+                    <div class="space-y-3">
+                        <div>
+                            <label for="doctor-name" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Doctor's Name</label>
+                            <input type="text" id="doctor-name" class="form-input" placeholder="e.g., Dr. Sarah Smith">
+                        </div>
+                        <div>
+                            <label for="doctor-contact" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Clinic / Phone Contact</label>
+                            <input type="tel" id="doctor-contact" class="form-input" placeholder="e.g., +1 (555) 019-2834">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Add / Edit Medicine Form Card -->
+                <section class="glass-card p-6 no-print card-hover" aria-labelledby="add-medicine-heading">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 id="add-medicine-heading" class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fas fa-pills text-purple-600" id="form-header-icon"></i>
+                            <span id="form-header-title">Add New Medicine</span>
+                        </h2>
+                        <button type="button" id="cancel-edit-btn" class="hidden text-xs text-red-500 hover:underline">
+                            Cancel Edit
+                        </button>
+                    </div>
+
+                    <form id="medicine-form" class="space-y-4">
+                        <!-- Medicine Name Autocomplete -->
+                        <div>
+                            <label for="medicine-name" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Medicine Name <span class="text-red-500">*</span></label>
+                            <div class="relative mt-1">
+                                <input type="text" id="medicine-name" class="form-input pr-10" required placeholder="Type medicine name (e.g., Aspirin, Amoxicillin)...">
+                                <div id="autocomplete-suggestions" class="absolute z-30 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl mt-1 max-h-48 overflow-y-auto hidden"></div>
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-1"><i class="fas fa-lightbulb text-amber-500 mr-1"></i>RxNav API suggestions will appear as you type.</p>
+                        </div>
+
+                        <!-- Pill Form & Color Selection -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="medicine-form-type" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Pill Form</label>
+                                <select id="medicine-form-type" class="form-select">
+                                    <option value="Tablet">Tablet 💊</option>
+                                    <option value="Capsule">Capsule 💊</option>
+                                    <option value="Liquid">Liquid 🧪</option>
+                                    <option value="Injection">Injection 💉</option>
+                                    <option value="Drops">Drops 💧</option>
+                                    <option value="Topical">Cream / Topical 🧴</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="medicine-color" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Pill Color Badge</label>
+                                <select id="medicine-color" class="form-select">
+                                    <option value="blue">Blue 🟦</option>
+                                    <option value="emerald">Emerald 🟩</option>
+                                    <option value="purple">Purple 🟪</option>
+                                    <option value="amber">Amber 🟧</option>
+                                    <option value="rose">Rose 🟥</option>
+                                    <option value="cyan">Cyan 🪟</option>
+                                    <option value="slate">Slate ⬜</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Schedule Times -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Daily Schedule Time(s) <span class="text-red-500">*</span></label>
+                            <div id="time-inputs" class="space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <input type="time" class="form-input flex-1" name="medicine-time" required>
+                                    <button type="button" class="text-slate-400 hover:text-red-500 px-2 text-lg" aria-label="Remove time slot" onclick="removeTimeInput(this)">&times;</button>
+                                </div>
+                            </div>
+                            <button type="button" id="add-time-btn" class="mt-2 btn-secondary text-xs w-full py-2">
+                                <i class="fas fa-plus mr-1 text-purple-500"></i>Add Additional Time Slot
+                            </button>
+                        </div>
+
+                        <!-- Dosage & Duration -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="medicine-dosage" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Dosage</label>
+                                <input type="text" id="medicine-dosage" class="form-input" placeholder="e.g., 500 mg, 1 pill">
+                            </div>
+                            <div>
+                                <label for="medicine-duration" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Duration (Days)</label>
+                                <input type="number" id="medicine-duration" class="form-input" min="1" placeholder="Ongoing / Indefinite">
+                            </div>
+                        </div>
+
+                        <!-- Inventory & Stock Alert Threshold -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="medicine-stock" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Current Pill Stock</label>
+                                <input type="number" id="medicine-stock" class="form-input" min="0" placeholder="e.g., 30">
+                            </div>
+                            <div>
+                                <label for="medicine-refill-alert" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Low Stock Alert at</label>
+                                <input type="number" id="medicine-refill-alert" class="form-input" min="1" value="5" placeholder="e.g., 5">
+                            </div>
+                        </div>
+
+                        <!-- Special Instructions -->
+                        <div>
+                            <label for="medicine-instructions" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Instructions / Meal Timing</label>
+                            <input type="text" id="medicine-instructions" class="form-input" placeholder="e.g., Take with meals & full glass of water">
+                        </div>
+
+                        <!-- Reminder Timing -->
+                        <div>
+                            <label for="medicine-reminder" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Reminder Timing</label>
+                            <select id="medicine-reminder" class="form-select">
+                                <option value="0">Exact Time of Dose</option>
+                                <option value="5">5 Minutes Before</option>
+                                <option value="10" selected>10 Minutes Before</option>
+                                <option value="15">15 Minutes Before</option>
+                                <option value="30">30 Minutes Before</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" id="add-medicine-submit-button" class="btn-primary w-full py-3">
+                            <i class="fas fa-plus mr-2"></i><span>Add Medicine</span>
+                        </button>
+                    </form>
+                </section>
+            </div>
+
+            <!-- Right Workspace Column (8 Cols): Medication Schedule, History, Analytics -->
+            <div class="lg:col-span-8 space-y-6">
+                
+                <!-- Schedule Card -->
+                <section class="glass-card p-6 card-hover" aria-labelledby="schedule-heading">
+                    <!-- Schedule Header Bar -->
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                        <div>
+                            <h2 id="schedule-heading" class="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i class="fas fa-calendar-days text-indigo-600"></i>Medication Schedule
+                            </h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Today's medication protocol & status</p>
+                        </div>
+
+                        <!-- Action Toolbar Buttons -->
+                        <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                            <button id="download-pdf" class="btn-success text-xs py-2 px-3" title="Export printable PDF schedule">
+                                <i class="fas fa-file-pdf mr-1.5"></i>PDF
+                            </button>
+                            <button id="export-ical" class="btn-purple text-xs py-2 px-3" title="Export calendar events to iCal (.ics)">
+                                <i class="fas fa-calendar-plus mr-1.5"></i>iCal (.ics)
+                            </button>
+                            <button id="export-data" class="btn-secondary text-xs py-2 px-3" title="Export backup JSON data">
+                                <i class="fas fa-download mr-1.5"></i>JSON Export
+                            </button>
+                            <input id="import-file" type="file" accept="application/json" class="hidden" />
+                            <button id="import-data" class="btn-secondary text-xs py-2 px-3" title="Import JSON backup">
+                                <i class="fas fa-upload mr-1.5"></i>Import
+                            </button>
+                            <button id="reset-schedule" class="btn-danger text-xs py-2 px-3" title="Reset all data">
+                                <i class="fas fa-trash-can mr-1.5"></i>Reset
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search & Filter Controls Bar -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200/60 dark:border-slate-800">
+                        <div class="relative">
+                            <input type="text" id="search-medicine" class="form-input pl-9 text-xs" placeholder="Search by name, dosage...">
+                            <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        </div>
+                        <div>
+                            <select id="filter-time" class="form-select text-xs">
+                                <option value="">All Time Periods</option>
+                                <option value="morning">Morning (6:00 AM - 12:00 PM)</option>
+                                <option value="afternoon">Afternoon (12:00 PM - 5:00 PM)</option>
+                                <option value="evening">Evening (5:00 PM - 9:00 PM)</option>
+                                <option value="night">Night (9:00 PM - 6:00 AM)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="filter-status" class="form-select text-xs">
+                                <option value="">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="taken">Taken</option>
+                                <option value="overdue">Overdue</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Table View -->
+                    <div class="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-slate-800">
+                        <table id="schedule-table" class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                            <thead class="bg-slate-100/70 dark:bg-slate-900/80">
+                                <tr>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Time</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Medicine & Form</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Dosage</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Stock</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Dynamic rows rendered here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Empty State Message -->
+                    <div id="empty-schedule" class="text-center py-12 px-4">
+                        <div class="w-16 h-16 rounded-full bg-blue-50 dark:bg-slate-800 text-blue-500 mx-auto flex items-center justify-center text-3xl mb-3">
+                            <i class="fas fa-prescription-bottle-medical"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-800 dark:text-slate-200">No medicines scheduled</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">Fill in the form on the left to create your personalized daily medication tracker.</p>
+                    </div>
+                </section>
+
+                <!-- 7-Day Compliance & Adherence History Card -->
+                <section class="glass-card p-6 card-hover no-print">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fas fa-chart-line text-purple-600"></i>Weekly Adherence Analytics
+                        </h2>
+                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Past 7 Days</span>
+                    </div>
+
+                    <div id="weekly-adherence-chart" class="grid grid-cols-7 gap-2 pt-2 pb-1">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </section>
+
+                <!-- Medication History Log -->
+                <section class="glass-card p-6 card-hover no-print" aria-labelledby="history-heading">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 id="history-heading" class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fas fa-clock-rotate-left text-orange-600"></i>Activity & Medication History
+                        </h2>
+                        <button id="clear-history-btn" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                            Clear Log
+                        </button>
+                    </div>
+                    <div id="medication-history" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                        <!-- History logs inserted dynamically -->
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white/60 dark:bg-slate-900/60 border-t border-slate-200 dark:border-slate-800 py-6 mt-12 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-500 dark:text-slate-400">
+            <p>© 2026 Medicine Tracker Pro — Designed by Md. Ismail Hossain</p>
+            <p class="mt-1 text-slate-400">Disclaimer: Always verify medication instructions with your licensed healthcare provider.</p>
+        </div>
+    </footer>
+
+    <!-- Info Modal -->
+    <div id="info-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="glass-card max-w-md w-full p-6 relative">
+            <button id="close-modal-x" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+            <div class="text-center">
+                <div class="w-12 h-12 bg-blue-500/10 text-blue-600 rounded-2xl mx-auto flex items-center justify-center text-2xl mb-3">
+                    <i class="fas fa-heart-pulse"></i>
                 </div>
-            </section>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">About Medicine Tracker</h3>
+                <p class="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                    Medicine Tracker is an advanced personal medication assistant featuring RxNav API integration, sound reminders, inventory tracking, iCal sync, and PDF schedule export.
+                </p>
+                <div class="mt-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-left space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
+                    <p><strong>Developer:</strong> Md. Ismail Hossain</p>
+                    <p><strong>Email:</strong> ismailhossain013@gmail.com</p>
+                    <p><strong>Phone:</strong> +88-01866304933</p>
+                </div>
+                <button id="close-modal" class="btn-primary w-full mt-5 py-2.5">Close</button>
             </div>
         </div>
     </div>
 
-    <script type="module" src="../src/main.js"></script>
+    <!-- Drug Info Modal (RxNav API detailed properties) -->
+    <div id="drug-info-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="glass-card max-w-lg w-full p-6 relative">
+            <button id="close-drug-modal-x" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center text-xl">
+                    <i class="fas fa-file-medical"></i>
+                </div>
+                <div>
+                    <h3 id="drug-modal-name" class="text-lg font-bold text-slate-900 dark:text-white">Drug Details</h3>
+                    <p class="text-xs text-slate-500">RxNav NIH Official Database Properties</p>
+                </div>
+            </div>
 
-    <!-- Info Modal -->
-    <div id="info-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3 text-center">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">About Medicine Tracker</h3>
-                <div class="mt-2 px-7 py-3">
-                    <p class="text-sm text-gray-500">
-                        This application helps you manage your medication schedule efficiently. You can add, edit, and delete medicine entries, and generate a printable PDF schedule. The autocomplete feature assists in quickly finding medicine names.
-                    </p>
-                    <p class="text-sm text-gray-500 mt-4">
-                        <strong>Developer:</strong> Md. Ismail Hossain<br>
-                        <strong>Contact:</strong> ismailhossain013@gmail.com<br>
-                        <strong>Phone:</strong> +88-01866304933
-                    </p>
+            <div class="space-y-3 text-xs text-slate-700 dark:text-slate-300">
+                <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl space-y-2">
+                    <div>
+                        <span class="font-bold text-slate-500 uppercase text-[10px] block">Generic Name</span>
+                        <span id="drug-modal-generic" class="text-sm font-semibold text-slate-900 dark:text-white">--</span>
+                    </div>
+                    <div>
+                        <span class="font-bold text-slate-500 uppercase text-[10px] block">Drug Category / Class</span>
+                        <span id="drug-modal-category" class="font-medium">--</span>
+                    </div>
+                    <div>
+                        <span class="font-bold text-slate-500 uppercase text-[10px] block">Usage / Definitional Features</span>
+                        <span id="drug-modal-usage" class="font-medium">--</span>
+                    </div>
                 </div>
-                <div class="items-center px-4 py-3">
-                    <button id="close-modal" class="btn-primary w-full">Close</button>
-                </div>
+            </div>
+
+            <button id="close-drug-modal" class="btn-secondary w-full mt-5 py-2.5">Close</button>
+        </div>
+    </div>
+
+    <!-- Active Due Dose Reminder Modal -->
+    <div id="reminder-alert-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+        <div class="glass-card max-w-md w-full p-6 text-center border-2 border-blue-500 animate-bounce-short">
+            <div class="w-16 h-16 rounded-full bg-blue-500/20 text-blue-600 mx-auto flex items-center justify-center text-3xl mb-4 animate-pulse">
+                <i class="fas fa-bell"></i>
+            </div>
+            <h3 class="text-xl font-extrabold text-slate-900 dark:text-white">Medication Time!</h3>
+            <p id="reminder-modal-text" class="text-sm text-slate-600 dark:text-slate-300 mt-2 font-medium">It's time to take your scheduled dose.</p>
+
+            <div class="flex gap-3 mt-6">
+                <button id="reminder-snooze-btn" class="btn-secondary flex-1 py-2.5">
+                    <i class="fas fa-clock mr-1.5 text-amber-500"></i>Snooze (10m)
+                </button>
+                <button id="reminder-take-btn" class="btn-success flex-1 py-2.5">
+                    <i class="fas fa-check mr-1.5"></i>Take Now
+                </button>
             </div>
         </div>
     </div>
 
     <!-- Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Settings</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="flex items-center">
-                            <input type="checkbox" id="enable-notifications" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                            <span class="ml-2 text-sm text-gray-700">Enable notifications</span>
-                        </label>
-                    </div>
-                    <div>
-                        <label class="flex items-center">
-                            <input type="checkbox" id="auto-save" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" checked>
-                            <span class="ml-2 text-sm text-gray-700">Auto-save data</span>
-                        </label>
-                    </div>
-                    <div>
-                        <label for="default-reminder" class="block text-sm font-medium text-gray-700">Default reminder time</label>
-                        <select id="default-reminder" class="form-input mt-1">
-                            <option value="5">5 minutes before</option>
-                            <option value="10" selected>10 minutes before</option>
-                            <option value="15">15 minutes before</option>
-                            <option value="30">30 minutes before</option>
-                        </select>
-                    </div>
+    <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="glass-card max-w-md w-full p-6 relative">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <i class="fas fa-gear text-slate-600"></i>Application Preferences
+            </h3>
+            <div class="space-y-4 text-xs text-slate-700 dark:text-slate-300">
+                <label class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl cursor-pointer">
+                    <span class="font-semibold">Browser Push Notifications</span>
+                    <input type="checkbox" id="enable-notifications" class="w-4 h-4 text-blue-600 rounded">
+                </label>
+                <label class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl cursor-pointer">
+                    <span class="font-semibold">Audio Reminder Alarm Sound</span>
+                    <input type="checkbox" id="enable-audio" class="w-4 h-4 text-blue-600 rounded" checked>
+                </label>
+                <label class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl cursor-pointer">
+                    <span class="font-semibold">Auto-save changes to localStorage</span>
+                    <input type="checkbox" id="auto-save" class="w-4 h-4 text-blue-600 rounded" checked>
+                </label>
+                <div>
+                    <label for="default-reminder" class="block font-semibold mb-1">Default Reminder Lead Time</label>
+                    <select id="default-reminder" class="form-select">
+                        <option value="0">At exact dose time</option>
+                        <option value="5">5 Minutes Before</option>
+                        <option value="10" selected>10 Minutes Before</option>
+                        <option value="15">15 Minutes Before</option>
+                        <option value="30">30 Minutes Before</option>
+                    </select>
                 </div>
-                <div class="mt-6 flex space-x-3">
-                    <button id="close-settings" class="btn-secondary flex-1">Cancel</button>
-                    <button id="save-settings" class="btn-primary flex-1">Save</button>
-                </div>
+            </div>
+            <div class="mt-6 flex space-x-3">
+                <button id="close-settings" class="btn-secondary flex-1 py-2.5">Cancel</button>
+                <button id="save-settings" class="btn-primary flex-1 py-2.5">Save Preferences</button>
             </div>
         </div>
     </div>
+
+    <!-- Application Script -->
+    <script type="module" src="../src/main.js"></script>
 </body>
 </html>
