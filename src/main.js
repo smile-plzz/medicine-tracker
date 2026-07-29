@@ -1,10 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Medicine Tracker Ultra v3.0 initialized");
+    console.log("Medicine Tracker Ultimate v3.5 initialized");
 
-    // Global Application State & Storage Keys
+    // Global Application State
     let currentProfile = 'Primary';
     let medicines = [];
     let medicationHistory = [];
+    let symptomsLog = [];
+    let vitalsData = null;
     let currentEditingMedicineId = null;
     let activeReminderTarget = null;
     let audioContext = null;
@@ -17,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         defaultReminder: 10
     };
 
-    // Color Swatch Mapping
+    // Color Swatches Mapping
     const colorClasses = {
         blue: { bg: 'bg-blue-100 dark:bg-blue-900/40', text: 'text-blue-700 dark:text-blue-300', border: 'border-blue-300 dark:border-blue-700', dot: '#3b82f6' },
         emerald: { bg: 'bg-emerald-100 dark:bg-emerald-900/40', text: 'text-emerald-700 dark:text-emerald-300', border: 'border-emerald-300 dark:border-emerald-700', dot: '#10b981' },
@@ -39,8 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // DOM Elements Mapping
     const elements = {
-        // Navigation & Top Toolbar
+        // Navigation
         profileSelector: document.getElementById('profile-selector'),
+        openEmergencyIdBtn: document.getElementById('open-emergency-id-btn'),
         voiceSpeakBtn: document.getElementById('voice-speak-btn'),
         soundToggle: document.getElementById('sound-toggle'),
         soundIcon: document.getElementById('sound-icon'),
@@ -62,6 +65,33 @@ document.addEventListener('DOMContentLoaded', () => {
         // Timeline
         timelineContainer: document.getElementById('timeline-container'),
 
+        // Vitals & Symptoms
+        vitalsForm: document.getElementById('vitals-form'),
+        vitalBp: document.getElementById('vital-bp'),
+        vitalGlucose: document.getElementById('vital-glucose'),
+        vitalPulse: document.getElementById('vital-pulse'),
+        vitalWeight: document.getElementById('vital-weight'),
+        vitalsLastUpdated: document.getElementById('vitals-last-updated'),
+        openSymptomModalBtn: document.getElementById('open-symptom-modal-btn'),
+        symptomsListContainer: document.getElementById('symptoms-list-container'),
+        symptomModal: document.getElementById('symptom-modal'),
+        symptomForm: document.getElementById('symptom-form'),
+        symptomMedSelect: document.getElementById('symptom-med-select'),
+        symptomSeverity: document.getElementById('symptom-severity'),
+        symptomNotes: document.getElementById('symptom-notes'),
+        closeSymptomModalX: document.getElementById('close-symptom-modal-x'),
+
+        // Emergency ID Modal
+        emergencyIdModal: document.getElementById('emergency-id-modal'),
+        closeEmergencyModalX: document.getElementById('close-emergency-modal-x'),
+        closeEmergencyModalBtn: document.getElementById('close-emergency-modal'),
+        printEmergencyIdBtn: document.getElementById('print-emergency-id-btn'),
+        emIdName: document.getElementById('em-id-name'),
+        emIdBlood: document.getElementById('em-id-blood'),
+        emIdPhone: document.getElementById('em-id-phone'),
+        emIdAllergies: document.getElementById('em-id-allergies'),
+        emIdMedsList: document.getElementById('em-id-meds-list'),
+
         // Form & Form Inputs
         medicineForm: document.getElementById('medicine-form'),
         medicineNameInput: document.getElementById('medicine-name'),
@@ -76,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         medicineColor: document.getElementById('medicine-color'),
         medicineStock: document.getElementById('medicine-stock'),
         medicineRefillAlert: document.getElementById('medicine-refill-alert'),
+        medicineDietaryCaution: document.getElementById('medicine-dietary-caution'),
         medicineDosage: document.getElementById('medicine-dosage'),
         medicineDuration: document.getElementById('medicine-duration'),
         medicineInstructions: document.getElementById('medicine-instructions'),
@@ -85,6 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
         patientNameInput: document.getElementById('patient-name'),
         patientDobInput: document.getElementById('patient-dob'),
         patientContactInput: document.getElementById('patient-contact'),
+        patientBloodType: document.getElementById('patient-blood-type'),
+        pharmacyPhoneInput: document.getElementById('pharmacy-phone'),
         patientAllergiesInput: document.getElementById('patient-allergies'),
         doctorNameInput: document.getElementById('doctor-name'),
         doctorContactInput: document.getElementById('doctor-contact'),
@@ -140,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         refillTextArea: document.getElementById('refill-text-area'),
         closePillboxModalBtn: document.getElementById('close-pillbox-modal'),
         closePillboxModalX: document.getElementById('close-pillbox-modal-x'),
+        printPillboxBtnModal: document.getElementById('print-pillbox-btn-modal'),
         pillboxTableBody: document.getElementById('pillbox-table-body'),
 
         drugModalName: document.getElementById('drug-modal-name'),
@@ -192,6 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateDashboard();
         renderMedicationHistory();
         renderWeeklyAdherenceChart();
+        renderVitals();
+        renderSymptomsLog();
         checkLowStockAlerts();
         checkDrugInteractions();
         startReminderCheck();
@@ -207,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Data Management & Profiles
+    // Data Storage Keys & Profiles
     function getStorageKey(base) {
         return `${base}_${currentProfile}`;
     }
@@ -217,6 +253,8 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem(getStorageKey('medicineSchedule'), JSON.stringify(medicines));
             localStorage.setItem(getStorageKey('medicationHistory'), JSON.stringify(medicationHistory));
             localStorage.setItem(getStorageKey('patientInfo'), JSON.stringify(getPatientInfo()));
+            localStorage.setItem(getStorageKey('symptomsLog'), JSON.stringify(symptomsLog));
+            localStorage.setItem(getStorageKey('vitalsData'), JSON.stringify(vitalsData));
             localStorage.setItem('settings', JSON.stringify(settings));
         } catch (error) {
             console.error('Failed to save storage data:', error);
@@ -228,6 +266,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             medicines = JSON.parse(localStorage.getItem(getStorageKey('medicineSchedule'))) || [];
             medicationHistory = JSON.parse(localStorage.getItem(getStorageKey('medicationHistory'))) || [];
+            symptomsLog = JSON.parse(localStorage.getItem(getStorageKey('symptomsLog'))) || [];
+            vitalsData = JSON.parse(localStorage.getItem(getStorageKey('vitalsData'))) || null;
             settings = { ...settings, ...JSON.parse(localStorage.getItem('settings')) };
 
             medicines = medicines.map(m => ({
@@ -235,6 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 color: 'blue',
                 stock: null,
                 refillAlert: 5,
+                dietaryCaution: '',
                 taken: [],
                 ...m
             }));
@@ -245,6 +286,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Failed to load storage data:', error);
             medicines = [];
             medicationHistory = [];
+            symptomsLog = [];
+            vitalsData = null;
         }
     }
 
@@ -253,6 +296,8 @@ document.addEventListener('DOMContentLoaded', () => {
             name: elements.patientNameInput.value.trim(),
             dob: elements.patientDobInput.value,
             contact: elements.patientContactInput.value.trim(),
+            bloodType: elements.patientBloodType.value,
+            pharmacyPhone: elements.pharmacyPhoneInput.value.trim(),
             allergies: elements.patientAllergiesInput.value.trim(),
             doctorName: elements.doctorNameInput.value.trim(),
             doctorContact: elements.doctorContactInput.value.trim()
@@ -265,6 +310,8 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.patientNameInput.value = savedInfo.name || '';
             elements.patientDobInput.value = savedInfo.dob || '';
             elements.patientContactInput.value = savedInfo.contact || '';
+            elements.patientBloodType.value = savedInfo.bloodType || 'O+';
+            elements.pharmacyPhoneInput.value = savedInfo.pharmacyPhone || '';
             elements.patientAllergiesInput.value = savedInfo.allergies || '';
             elements.doctorNameInput.value = savedInfo.doctorName || '';
             elements.doctorContactInput.value = savedInfo.doctorContact || '';
@@ -272,6 +319,8 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.patientNameInput.value = '';
             elements.patientDobInput.value = '';
             elements.patientContactInput.value = '';
+            elements.patientBloodType.value = 'O+';
+            elements.pharmacyPhoneInput.value = '';
             elements.patientAllergiesInput.value = '';
             elements.doctorNameInput.value = '';
             elements.doctorContactInput.value = '';
@@ -338,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Text-to-Speech Voice Assistant
+    // Voice Assistant
     function speakSchedule() {
         if (!('speechSynthesis' in window)) {
             showNotification('Text-to-speech not supported in browser', 'error');
@@ -369,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showNotification('Speaking schedule...', 'info');
     }
 
-    // Event Listeners
+    // Event Listeners Setup
     function setupEventListeners() {
         // Profile Selector
         elements.profileSelector?.addEventListener('change', (e) => {
@@ -380,10 +429,26 @@ document.addEventListener('DOMContentLoaded', () => {
             updateDashboard();
             renderMedicationHistory();
             renderWeeklyAdherenceChart();
+            renderVitals();
+            renderSymptomsLog();
             checkLowStockAlerts();
             checkDrugInteractions();
             showNotification(`Switched profile to ${currentProfile}`, 'info');
         });
+
+        // Emergency Medical ID Card Modal
+        elements.openEmergencyIdBtn?.addEventListener('click', openEmergencyModal);
+        elements.closeEmergencyModalBtn?.addEventListener('click', () => closeModal(elements.emergencyIdModal));
+        elements.closeEmergencyModalX?.addEventListener('click', () => closeModal(elements.emergencyIdModal));
+        elements.printEmergencyIdBtn?.addEventListener('click', () => window.print());
+
+        // Vitals Form Submit
+        elements.vitalsForm?.addEventListener('submit', handleVitalsSubmit);
+
+        // Symptoms Modal & Submit
+        elements.openSymptomModalBtn?.addEventListener('click', openSymptomModal);
+        elements.closeSymptomModalX?.addEventListener('click', () => closeModal(elements.symptomModal));
+        elements.symptomForm?.addEventListener('submit', handleSymptomSubmit);
 
         // Voice Readout Button
         elements.voiceSpeakBtn?.addEventListener('click', speakSchedule);
@@ -399,8 +464,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Patient profile auto-save
-        [elements.patientNameInput, elements.patientDobInput, elements.patientContactInput, 
-         elements.patientAllergiesInput, elements.doctorNameInput, elements.doctorContactInput]
+        [elements.patientNameInput, elements.patientDobInput, elements.patientContactInput,
+         elements.patientBloodType, elements.pharmacyPhoneInput, elements.patientAllergiesInput,
+         elements.doctorNameInput, elements.doctorContactInput]
             .forEach(input => input.addEventListener('input', () => {
                 if (settings.autoSave) saveData();
             }));
@@ -425,34 +491,35 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.openRefillModalBtn?.addEventListener('click', openRefillModal);
 
         // Refill Modal
-        elements.closeRefillModalBtn?.addEventListener('click', () => elements.refillModal.classList.add('hidden'));
-        elements.closeRefillModalX?.addEventListener('click', () => elements.refillModal.classList.add('hidden'));
+        elements.closeRefillModalBtn?.addEventListener('click', () => closeModal(elements.refillModal));
+        elements.closeRefillModalX?.addEventListener('click', () => closeModal(elements.refillModal));
         elements.copyRefillTextBtn?.addEventListener('click', copyRefillText);
 
         // Pillbox Modal
-        elements.closePillboxModalBtn?.addEventListener('click', () => elements.pillboxModal.classList.add('hidden'));
-        elements.closePillboxModalX?.addEventListener('click', () => elements.pillboxModal.classList.add('hidden'));
+        elements.closePillboxModalBtn?.addEventListener('click', () => closeModal(elements.pillboxModal));
+        elements.closePillboxModalX?.addEventListener('click', () => closeModal(elements.pillboxModal));
+        elements.printPillboxBtnModal?.addEventListener('click', () => window.print());
 
         // Info & Settings Modals
-        elements.infoButton.addEventListener('click', () => elements.infoModal.classList.remove('hidden'));
-        elements.settingsButton.addEventListener('click', () => elements.settingsModal.classList.remove('hidden'));
-        elements.closeModalButton.addEventListener('click', () => elements.infoModal.classList.add('hidden'));
-        elements.closeModalX?.addEventListener('click', () => elements.infoModal.classList.add('hidden'));
-        elements.closeSettingsButton.addEventListener('click', () => elements.settingsModal.classList.add('hidden'));
+        elements.infoButton.addEventListener('click', () => openModal(elements.infoModal));
+        elements.settingsButton.addEventListener('click', () => openModal(elements.settingsModal));
+        elements.closeModalButton.addEventListener('click', () => closeModal(elements.infoModal));
+        elements.closeModalX?.addEventListener('click', () => closeModal(elements.infoModal));
+        elements.closeSettingsButton.addEventListener('click', () => closeModal(elements.settingsModal));
         elements.saveSettingsButton.addEventListener('click', saveSettings);
-        elements.closeDrugModalBtn?.addEventListener('click', () => elements.drugInfoModal.classList.add('hidden'));
-        elements.closeDrugModalX?.addEventListener('click', () => elements.drugInfoModal.classList.add('hidden'));
+        elements.closeDrugModalBtn?.addEventListener('click', () => closeModal(elements.drugInfoModal));
+        elements.closeDrugModalX?.addEventListener('click', () => closeModal(elements.drugInfoModal));
 
         // Reminder Modal
         elements.reminderTakeBtn?.addEventListener('click', () => {
             if (activeReminderTarget) {
                 markAsTaken(activeReminderTarget.id, activeReminderTarget.time);
             }
-            elements.reminderAlertModal.classList.add('hidden');
+            closeModal(elements.reminderAlertModal);
         });
         elements.reminderSnoozeBtn?.addEventListener('click', () => {
             showNotification('Reminder snoozed for 10 minutes', 'info');
-            elements.reminderAlertModal.classList.add('hidden');
+            closeModal(elements.reminderAlertModal);
         });
 
         // History
@@ -463,12 +530,107 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.importDataButton?.addEventListener('click', () => elements.importFileInput.click());
         elements.importFileInput?.addEventListener('change', handleImportFile);
 
+        // Empty state add button
+        document.getElementById('empty-state-add-btn')?.addEventListener('click', () => {
+            elements.medicineNameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            elements.medicineNameInput.focus();
+        });
+
         // Backdrop click modals
-        [elements.infoModal, elements.settingsModal, elements.drugInfoModal, elements.reminderAlertModal, elements.refillModal, elements.pillboxModal].forEach(modal => {
+        [elements.infoModal, elements.settingsModal, elements.drugInfoModal, elements.reminderAlertModal,
+         elements.refillModal, elements.pillboxModal, elements.emergencyIdModal, elements.symptomModal].forEach(modal => {
             modal?.addEventListener('click', (e) => {
-                if (e.target === modal) modal.classList.add('hidden');
+                if (e.target === modal) closeModal(modal);
             });
         });
+
+        // Keyboard dismiss for modals (Esc)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const visibleModals = [elements.infoModal, elements.settingsModal, elements.drugInfoModal,
+                    elements.reminderAlertModal, elements.refillModal, elements.pillboxModal,
+                    elements.emergencyIdModal, elements.symptomModal].filter(m => m && !m.classList.contains('hidden'));
+                if (visibleModals.length > 0) {
+                    closeModal(visibleModals[visibleModals.length - 1]);
+                }
+            }
+        });
+
+        // Delegated event: Schedule table actions
+        elements.scheduleTableBody?.addEventListener('click', (e) => {
+            const markTakenBtn = e.target.closest('.mark-taken-btn');
+            if (markTakenBtn) {
+                markAsTaken(markTakenBtn.dataset.id, markTakenBtn.dataset.time);
+                return;
+            }
+            const unmarkTakenBtn = e.target.closest('.unmark-taken-btn');
+            if (unmarkTakenBtn) {
+                unmarkTaken(unmarkTakenBtn.dataset.id, unmarkTakenBtn.dataset.time);
+                return;
+            }
+            const editBtn = e.target.closest('.edit-medicine-btn');
+            if (editBtn) {
+                editMedicine(editBtn.dataset.id);
+                return;
+            }
+            const deleteBtn = e.target.closest('.delete-medicine-btn');
+            if (deleteBtn) {
+                deleteMedicine(deleteBtn.dataset.id);
+                return;
+            }
+            const drugBtn = e.target.closest('.drug-detail-btn');
+            if (drugBtn) {
+                showDrugDetailsModal(drugBtn.dataset.id);
+                return;
+            }
+        });
+
+        // Delegated event: Remove time input buttons
+        elements.timeInputs?.addEventListener('click', (e) => {
+            const btn = e.target.closest('.remove-time-btn');
+            if (btn) {
+                removeTimeInput(btn);
+            }
+        });
+
+        // Delegated event: Notification toast close
+        elements.notificationContainer?.addEventListener('click', (e) => {
+            const btn = e.target.closest('.toast-close-btn');
+            if (btn) {
+                btn.closest('.notification-toast')?.remove();
+            }
+        });
+
+        // More actions dropdown
+        const moreActionsChip = document.getElementById('more-actions-chip');
+        const moreActionsDropdown = document.getElementById('more-actions-dropdown');
+        if (moreActionsChip && moreActionsDropdown) {
+            moreActionsChip.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = !moreActionsDropdown.classList.contains('hidden');
+                moreActionsDropdown.classList.toggle('hidden');
+                moreActionsChip.setAttribute('aria-expanded', !isOpen);
+            });
+            document.addEventListener('click', (e) => {
+                if (!moreActionsDropdown.contains(e.target) && e.target !== moreActionsChip) {
+                    moreActionsDropdown.classList.add('hidden');
+                    moreActionsChip.setAttribute('aria-expanded', 'false');
+                }
+            });
+            moreActionsDropdown.addEventListener('click', (e) => {
+                const btn = e.target.closest('.more-action-btn');
+                if (!btn) return;
+                const action = btn.dataset.action;
+                if (action === 'print-pillbox') openPillboxModal();
+                else if (action === 'export-ical') generateICalendar();
+                else if (action === 'export-csv') exportCSV();
+                else if (action === 'export-data') exportData();
+                else if (action === 'import-data') elements.importFileInput.click();
+                else if (action === 'reset-schedule') resetSchedule();
+                moreActionsDropdown.classList.add('hidden');
+                moreActionsChip.setAttribute('aria-expanded', 'false');
+            });
+        }
 
         // Autocomplete
         elements.medicineNameInput.addEventListener('input', debounce(fetchAutocompleteSuggestions, 300));
@@ -478,6 +640,25 @@ document.addEventListener('DOMContentLoaded', () => {
             settings.enableNotifications = e.target.checked;
             if (e.target.checked) requestNotificationPermission();
         });
+    }
+
+    function openModal(modal) {
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        // Force reflow for animation
+        void modal.offsetWidth;
+        modal.classList.add('active');
+        // Focus the first focusable element
+        const focusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (focusable) focusable.focus();
+    }
+
+    function closeModal(modal) {
+        if (!modal) return;
+        modal.classList.remove('active');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 250);
     }
 
     function debounce(func, delay) {
@@ -497,22 +678,139 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.innerHTML = `
             <i class="fas ${iconClass} text-lg mr-2.5"></i>
             <span class="text-xs font-semibold">${message}</span>
-            <button class="ml-4 text-white/70 hover:text-white text-sm" onclick="this.parentElement.remove()">
+            <button class="ml-4 text-white/70 hover:text-white text-sm toast-close-btn" aria-label="Dismiss notification">
                 <i class="fas fa-xmark"></i>
             </button>
         `;
 
         elements.notificationContainer.appendChild(toast);
+        toast.querySelector('.toast-close-btn').addEventListener('click', () => toast.remove());
         setTimeout(() => toast.remove(), 4500);
     }
 
-    // Time Slot Input Generator
+    // Emergency Medical ID Card Renderer
+function openEmergencyModal() {
+        const pInfo = getPatientInfo();
+        elements.emIdName.textContent = pInfo.name || 'Not specified';
+        elements.emIdBlood.textContent = pInfo.bloodType || 'O+';
+        elements.emIdPhone.textContent = pInfo.contact || pInfo.doctorContact || 'N/A';
+        elements.emIdAllergies.textContent = pInfo.allergies || 'None reported';
+
+        elements.emIdMedsList.innerHTML = '';
+        if (medicines.length === 0) {
+            elements.emIdMedsList.innerHTML = '<li>No active medications</li>';
+        } else {
+            medicines.forEach(m => {
+                const li = document.createElement('li');
+                li.textContent = `${m.name} (${m.dosage || '1 dose'}) — ${m.times.map(format12HourTime).join(', ')}`;
+                elements.emIdMedsList.appendChild(li);
+            });
+        }
+
+        elements.emergencyIdModal.classList.remove('hidden');
+        void elements.emergencyIdModal.offsetWidth;
+        elements.emergencyIdModal.classList.add('active');
+    }
+
+    // Health Vitals Log Processor
+    function handleVitalsSubmit(e) {
+        e.preventDefault();
+        vitalsData = {
+            bp: elements.vitalBp.value.trim() || '120/80',
+            glucose: elements.vitalGlucose.value ? `${elements.vitalGlucose.value} mg/dL` : '--',
+            pulse: elements.vitalPulse.value ? `${elements.vitalPulse.value} BPM` : '--',
+            weight: elements.vitalWeight.value.trim() || '--',
+            timestamp: new Date().toISOString()
+        };
+        saveData();
+        renderVitals();
+        showNotification('Current health vitals recorded!', 'success');
+    }
+
+    function renderVitals() {
+        if (!vitalsData) {
+            elements.vitalsLastUpdated.textContent = 'Not logged today';
+            return;
+        }
+        elements.vitalBp.value = vitalsData.bp || '';
+        elements.vitalGlucose.value = (vitalsData.glucose || '').replace(' mg/dL', '');
+        elements.vitalPulse.value = (vitalsData.pulse || '').replace(' BPM', '');
+        elements.vitalWeight.value = vitalsData.weight || '';
+        elements.vitalsLastUpdated.textContent = `Logged ${new Date(vitalsData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
+
+    // Symptom Logger Processor
+    function openSymptomModal() {
+        elements.symptomMedSelect.innerHTML = '';
+        if (medicines.length === 0) {
+            elements.symptomMedSelect.innerHTML = '<option value="General">General / Unspecified</option>';
+        } else {
+            medicines.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.name;
+                opt.textContent = m.name;
+                elements.symptomMedSelect.appendChild(opt);
+            });
+        }
+        elements.symptomModal.classList.remove('hidden');
+        void elements.symptomModal.offsetWidth;
+        elements.symptomModal.classList.add('active');
+    }
+
+    function handleSymptomSubmit(e) {
+        e.preventDefault();
+        const newSymptom = {
+            id: crypto.randomUUID(),
+            medicineName: elements.symptomMedSelect.value,
+            severity: elements.symptomSeverity.value,
+            notes: elements.symptomNotes.value.trim(),
+            timestamp: new Date().toISOString()
+        };
+        symptomsLog.unshift(newSymptom);
+        saveData();
+        renderSymptomsLog();
+        elements.symptomForm.reset();
+        elements.symptomModal.classList.remove('active');
+        setTimeout(() => {
+            elements.symptomModal.classList.add('hidden');
+        }, 250);
+        showNotification('Symptom logged to profile!', 'success');
+    }
+
+    function renderSymptomsLog() {
+        elements.symptomsListContainer.innerHTML = '';
+        if (symptomsLog.length === 0) {
+            elements.symptomsListContainer.innerHTML = '<p class="text-slate-400 text-center py-3">No side effects logged</p>';
+            return;
+        }
+
+        symptomsLog.slice(0, 5).forEach(s => {
+            const div = document.createElement('div');
+            const sevColor = s.severity === 'Severe' ? 'text-rose-600 bg-rose-50 dark:bg-rose-950/50' : 
+                             s.severity === 'Moderate' ? 'text-amber-600 bg-amber-50 dark:bg-amber-950/50' : 'text-yellow-600 bg-yellow-50 dark:bg-yellow-950/50';
+
+            div.className = 'p-2 bg-slate-50 dark:bg-slate-900/60 rounded-lg flex justify-between items-start';
+            div.innerHTML = `
+                <div>
+                    <div class="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200">
+                        <span>${s.medicineName}</span>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded font-extrabold ${sevColor}">${s.severity}</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500">${s.notes}</p>
+                </div>
+                <span class="text-[10px] text-slate-400 whitespace-nowrap ml-2">${new Date(s.timestamp).toLocaleDateString()}</span>
+            `;
+            elements.symptomsListContainer.appendChild(div);
+        });
+    }
+
+    // Time Input Generator
     function createTimeInput(value = '') {
         const div = document.createElement('div');
         div.className = 'flex items-center gap-2';
         div.innerHTML = `
             <input type="time" class="form-input flex-1" name="medicine-time" value="${value}" required>
-            <button type="button" class="text-slate-400 hover:text-red-500 px-2 text-lg" aria-label="Remove time slot" onclick="removeTimeInput(this)">&times;</button>
+            <button type="button" class="text-slate-400 hover:text-red-500 px-2 text-lg remove-time-btn" aria-label="Remove time slot">&times;</button>
         `;
         return div;
     }
@@ -521,21 +819,24 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.timeInputs.appendChild(createTimeInput(value));
     }
 
-    window.removeTimeInput = (button) => {
+    function removeTimeInput(button) {
         if (elements.timeInputs.children.length > 1) {
             button.parentElement.remove();
         } else {
             showNotification('At least one time slot is required', 'error');
         }
-    };
+    }
 
-    // RxNav Autocomplete
+    // Autocomplete
     async function fetchAutocompleteSuggestions() {
         const query = elements.medicineNameInput.value.trim();
         if (query.length < 3) {
             elements.autocompleteSuggestions.classList.add('hidden');
             return;
         }
+
+        elements.autocompleteSuggestions.innerHTML = '<div class="px-3 py-2 text-xs text-slate-400 flex items-center gap-2"><span class="rxnav-spinner"></span>Searching...</div>';
+        elements.autocompleteSuggestions.classList.remove('hidden');
 
         try {
             const response = await fetch(`https://rxnav.nlm.nih.gov/REST/drugs.json?name=${encodeURIComponent(query)}`);
@@ -609,12 +910,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function validateForm() {
         let isValid = true;
         document.querySelectorAll('.error-message').forEach(el => el.remove());
+        document.querySelectorAll('.field-icon').forEach(el => el.remove());
         document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+        document.querySelectorAll('.field-success').forEach(el => el.classList.remove('field-success'));
+        document.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
 
         const medicineName = elements.medicineNameInput.value.trim();
         if (!medicineName) {
             showFieldError(elements.medicineNameInput, 'Medicine name is required');
             isValid = false;
+        } else {
+            showFieldSuccess(elements.medicineNameInput);
         }
 
         const timeInputs = document.querySelectorAll('input[name="medicine-time"]');
@@ -622,6 +928,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (validTimes.length === 0) {
             showFieldError(timeInputs[0], 'At least one scheduled time is required');
             isValid = false;
+        } else {
+            timeInputs.forEach(input => {
+                if (input.value) showFieldSuccess(input);
+            });
         }
 
         return isValid;
@@ -629,10 +939,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showFieldError(input, message) {
         input.classList.add('invalid');
+        input.classList.remove('field-success');
+        input.classList.add('field-error');
         const error = document.createElement('p');
         error.className = 'error-message';
         error.textContent = message;
         input.parentElement.appendChild(error);
+        const icon = document.createElement('span');
+        icon.className = 'field-icon error';
+        icon.innerHTML = '<i class="fas fa-circle-exclamation"></i>';
+        input.parentElement.appendChild(icon);
+    }
+
+    function showFieldSuccess(input) {
+        input.classList.remove('invalid', 'field-error');
+        input.classList.add('field-success');
+        const existingIcon = input.parentElement.querySelector('.field-icon');
+        if (existingIcon) existingIcon.remove();
+        const icon = document.createElement('span');
+        icon.className = 'field-icon success';
+        icon.innerHTML = '<i class="fas fa-circle-check"></i>';
+        input.parentElement.appendChild(icon);
     }
 
     function getFormData() {
@@ -650,6 +977,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dosage: elements.medicineDosage.value.trim() || '',
             stock: stockVal,
             refillAlert: refillVal,
+            dietaryCaution: elements.medicineDietaryCaution.value,
             instructions: elements.medicineInstructions.value.trim() || '',
             reminder: elements.medicineReminder.value || settings.defaultReminder
         };
@@ -748,7 +1076,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         scheduleItems.forEach(item => {
             const row = document.createElement('tr');
-            row.className = 'hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors text-xs sm:text-sm';
+            row.className = 'hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors text-xs sm:text-sm cursor-pointer schedule-row';
+            row.setAttribute('data-id', item.id);
+            row.setAttribute('role', 'row');
+            row.setAttribute('tabindex', '0');
+
+            row.addEventListener('click', (e) => {
+                if (e.target.closest('button')) return;
+                row.classList.toggle('schedule-row-selected');
+            });
+            row.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    row.classList.toggle('schedule-row-selected');
+                }
+            });
 
             const status = getDoseStatus(item);
             const colorMeta = colorClasses[item.color] || colorClasses.blue;
@@ -780,6 +1122,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            let dietaryTag = '';
+            if (item.dietaryCaution) {
+                dietaryTag = `<span class="text-[10px] font-semibold text-purple-600 bg-purple-50 dark:bg-purple-950/60 px-1.5 py-0.5 rounded mt-0.5 inline-block">${item.dietaryCaution}</span>`;
+            }
+
             row.innerHTML = `
                 <td class="px-4 py-3 font-semibold text-slate-900 dark:text-white whitespace-nowrap">
                     <div class="flex items-center gap-1.5">
@@ -793,13 +1140,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             <i class="fas ${formIcon}"></i>
                         </div>
                         <div>
-                            <button class="font-bold text-slate-900 dark:text-white hover:text-blue-600 text-left transition-colors cursor-pointer" onclick="showDrugDetailsModal('${item.id}')">
+                            <button class="font-bold text-slate-900 dark:text-white hover:text-blue-600 text-left transition-colors cursor-pointer drug-detail-btn" data-id="${item.id}">
                                 ${item.name}
                             </button>
                             <div class="text-[11px] text-slate-500 flex items-center gap-1">
                                 <span>${item.formType || 'Medicine'}</span>
                                 ${item.info?.genericName ? `• <span class="truncate max-w-[120px]">${item.info.genericName}</span>` : ''}
                             </div>
+                            ${dietaryTag}
                         </div>
                     </div>
                 </td>
@@ -816,18 +1164,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="px-4 py-3 text-right whitespace-nowrap">
                     <div class="flex items-center justify-end space-x-2">
                         ${status !== 'taken' ? `
-                            <button class="btn-success text-xs py-1 px-2.5" onclick="markAsTaken('${item.id}', '${item.time}')" title="Mark dose taken">
+                            <button class="btn-success text-xs py-1 px-2.5 mark-taken-btn" data-id="${item.id}" data-time="${item.time}" title="Mark dose taken">
                                 <i class="fas fa-check"></i> <span class="hidden sm:inline">Taken</span>
                             </button>
                         ` : `
-                            <button class="btn-secondary text-xs py-1 px-2 text-slate-400" onclick="unmarkTaken('${item.id}', '${item.time}')" title="Undo taken status">
+                            <button class="btn-secondary text-xs py-1 px-2 text-slate-400 unmark-taken-btn" data-id="${item.id}" data-time="${item.time}" title="Undo taken status">
                                 <i class="fas fa-undo"></i>
                             </button>
                         `}
-                        <button class="btn-secondary text-xs py-1 px-2 text-blue-600" onclick="editMedicine('${item.id}')" title="Edit medicine">
+                        <button class="btn-secondary text-xs py-1 px-2 text-blue-600 edit-medicine-btn" data-id="${item.id}" title="Edit medicine">
                             <i class="fas fa-pen"></i>
                         </button>
-                        <button class="btn-secondary text-xs py-1 px-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950" onclick="deleteMedicine('${item.id}')" title="Delete medicine">
+                        <button class="btn-secondary text-xs py-1 px-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 delete-medicine-btn" data-id="${item.id}" title="Delete medicine">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -838,7 +1186,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 24-Hour Visual Schedule Timeline Renderer
     function renderTimeline() {
         if (!elements.timelineContainer) return;
         elements.timelineContainer.innerHTML = '';
@@ -932,7 +1279,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Dashboard Statistics & Adherence Streak
     function updateDashboard() {
         elements.totalMedicines.textContent = medicines.length;
         elements.activePrescriptionsCount.textContent = medicines.length;
@@ -961,13 +1307,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const strokeDashoffset = 100 - adherencePercent;
         elements.adherenceRing.style.strokeDashoffset = strokeDashoffset;
 
-        // Adherence Streak Calculation
         const streakDays = calculateAdherenceStreak();
         if (elements.streakBadge) {
             elements.streakBadge.textContent = `🔥 ${streakDays}d Streak`;
         }
 
-        // Next Dose Calculation
         const nextInfo = getNextDoseInfo();
         if (nextInfo) {
             elements.nextDose.textContent = format12HourTime(nextInfo.time);
@@ -998,7 +1342,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (takenCount >= totalScheduled) {
                 streak++;
             } else if (i > 0) {
-                break; // Break streak if missing past day
+                break;
             }
             d.setDate(d.getDate() - 1);
         }
@@ -1055,7 +1399,7 @@ document.addEventListener('DOMContentLoaded', () => {
             days.push(d);
         }
 
-        days.forEach(dayDate => {
+        const adherenceData = days.map(dayDate => {
             const dateStr = getLocalDateString(dayDate);
             const dayName = dayDate.toLocaleDateString('en-US', { weekday: 'short' });
 
@@ -1071,22 +1415,52 @@ document.addEventListener('DOMContentLoaded', () => {
             const percent = totalScheduled > 0 ? Math.min(100, Math.round((totalTaken / totalScheduled) * 100)) : 0;
             const isToday = dateStr === getLocalDateString();
 
+            return { dayName, percent, totalTaken, totalScheduled, isToday, dateStr };
+        });
+
+        const todayData = adherenceData[adherenceData.length - 1];
+        const yesterdayData = adherenceData.length >= 2 ? adherenceData[adherenceData.length - 2] : null;
+        const trendDelta = todayData && yesterdayData && todayData.totalScheduled > 0 && yesterdayData.totalScheduled > 0
+            ? todayData.percent - yesterdayData.percent
+            : null;
+
+        adherenceData.forEach(day => {
             const col = document.createElement('div');
             col.className = 'flex flex-col items-center gap-1 text-center';
+
+            const segments = [];
+            const segmentCount = 4;
+            for (let s = 0; s < segmentCount; s++) {
+                const segPercent = day.totalScheduled > 0 ? Math.min(100, Math.round(((day.totalTaken / day.totalScheduled) * 100) / segmentCount * (s + 1))) : 0;
+                const prevPercent = s > 0 ? Math.min(100, Math.round(((day.totalTaken / day.totalScheduled) * 100) / segmentCount * s)) : 0;
+                const segHeight = Math.max(0, segPercent - prevPercent);
+                const segColor = day.isToday ? 'bg-indigo-500' : 'bg-blue-400 dark:bg-blue-600';
+                segments.push(`<div class="w-full ${segColor} rounded-sm transition-all duration-300" style="height:${segHeight}%"></div>`);
+            }
+
             col.innerHTML = `
-                <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-t-lg h-24 flex items-end justify-center p-1 relative group">
-                    <div class="w-full ${isToday ? 'bg-gradient-to-t from-indigo-600 to-purple-500' : 'bg-blue-500/70'} rounded-t transition-all duration-500" style="height: ${percent}%"></div>
+                <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-t-lg h-24 flex flex-col-reverse items-center p-1 relative group">
+                    ${segments.join('')}
                     <div class="absolute -top-7 bg-slate-900 text-white text-[10px] py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                        ${percent}% (${totalTaken}/${totalScheduled})
+                        ${day.percent}% (${day.totalTaken}/${day.totalScheduled})
                     </div>
                 </div>
-                <span class="text-[11px] font-semibold ${isToday ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-500'}">${dayName}</span>
+                <span class="text-[11px] font-semibold ${day.isToday ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-500'}">${day.dayName}</span>
             `;
             elements.weeklyAdherenceChart.appendChild(col);
         });
+
+        if (todayData && todayData.totalScheduled > 0 && trendDelta !== null) {
+            const trendIcon = trendDelta > 0 ? '▲' : trendDelta < 0 ? '▼' : '—';
+            const trendColor = trendDelta > 0 ? 'text-emerald-600 dark:text-emerald-400' : trendDelta < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400';
+            const trendLabel = trendDelta > 0 ? 'up from yesterday' : trendDelta < 0 ? 'down from yesterday' : 'same as yesterday';
+            const trendEl = document.createElement('div');
+            trendEl.className = `flex items-center gap-1 text-[11px] font-semibold ${trendColor} mt-1`;
+            trendEl.innerHTML = `<span>${trendIcon} ${todayData.percent}% vs yesterday (${trendLabel})</span>`;
+            elements.weeklyAdherenceChart.parentElement.appendChild(trendEl);
+        }
     }
 
-    // RxNav Drug-Drug Interaction Safety Checker Matrix
     async function checkDrugInteractions() {
         if (!settings.enableInteractionCheck || medicines.length < 2) {
             elements.interactionAlertBanner.classList.add('hidden');
@@ -1129,7 +1503,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Low Stock Alert Warnings
     function checkLowStockAlerts() {
         const lowStockMeds = medicines.filter(m => m.stock !== null && m.stock !== undefined && m.stock <= (m.refillAlert || 5));
         if (lowStockMeds.length > 0) {
@@ -1141,7 +1514,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Refill Request Generator
     function openRefillModal() {
         const patientName = elements.patientNameInput.value.trim() || 'Patient';
         const docName = elements.doctorNameInput.value.trim() || 'Healthcare Provider';
@@ -1162,6 +1534,8 @@ document.addEventListener('DOMContentLoaded', () => {
         message += `\nThank you,\n${patientName}`;
         elements.refillTextArea.value = message;
         elements.refillModal.classList.remove('hidden');
+        void elements.refillModal.offsetWidth;
+        elements.refillModal.classList.add('active');
     }
 
     function copyRefillText() {
@@ -1170,7 +1544,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showNotification('Refill request copied to clipboard!', 'success');
     }
 
-    // Printable Weekly Pillbox Organizer Sheet
     function openPillboxModal() {
         const tbody = elements.pillboxTableBody;
         if (!tbody) return;
@@ -1205,9 +1578,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         elements.pillboxModal.classList.remove('hidden');
+        void elements.pillboxModal.offsetWidth;
+        elements.pillboxModal.classList.add('active');
     }
 
-    // History Log Management
     function addToHistory(action, medicine) {
         const historyItem = {
             id: crypto.randomUUID(),
@@ -1265,8 +1639,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showNotification('Activity history cleared', 'info');
     }
 
-    // Global Functions for Action Buttons
-    window.editMedicine = (id) => {
+    function editMedicine(id) {
         const medicine = medicines.find(m => m.id === id);
         if (medicine) {
             currentEditingMedicineId = id;
@@ -1277,6 +1650,7 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.medicineDosage.value = medicine.dosage || '';
             elements.medicineStock.value = medicine.stock !== null && medicine.stock !== undefined ? medicine.stock : '';
             elements.medicineRefillAlert.value = medicine.refillAlert !== undefined ? medicine.refillAlert : 5;
+            elements.medicineDietaryCaution.value = medicine.dietaryCaution || '';
             elements.medicineInstructions.value = medicine.instructions || '';
             elements.medicineReminder.value = medicine.reminder || settings.defaultReminder;
 
@@ -1291,9 +1665,9 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.cancelEditBtn.classList.remove('hidden');
             window.scrollTo({ top: elements.medicineForm.offsetTop - 100, behavior: 'smooth' });
         }
-    };
+    }
 
-    window.deleteMedicine = (id) => {
+    function deleteMedicine(id) {
         if (confirm('Are you sure you want to remove this medication from your schedule?')) {
             const medicine = medicines.find(m => m.id === id);
             medicines = medicines.filter(m => m.id !== id);
@@ -1307,9 +1681,9 @@ document.addEventListener('DOMContentLoaded', () => {
             checkDrugInteractions();
             showNotification('Medicine deleted successfully', 'success');
         }
-    };
+    }
 
-    window.markAsTaken = (id, time) => {
+function markAsTaken(id, time) {
         const medicine = medicines.find(m => m.id === id);
         if (medicine) {
             const todayStr = getLocalDateString();
@@ -1336,14 +1710,14 @@ document.addEventListener('DOMContentLoaded', () => {
             checkLowStockAlerts();
             showNotification(`Marked ${medicine.name} as taken!`, 'success');
         }
-    };
+    }
 
-    window.unmarkTaken = (id, time) => {
+    function unmarkTaken(id, time) {
         const medicine = medicines.find(m => m.id === id);
         if (medicine && medicine.taken) {
             const todayStr = getLocalDateString();
             medicine.taken = medicine.taken.filter(t => !(t.date === todayStr && t.time === time));
-            
+
             if (medicine.stock !== null && medicine.stock !== undefined) {
                 medicine.stock += 1;
             }
@@ -1356,9 +1730,9 @@ document.addEventListener('DOMContentLoaded', () => {
             checkLowStockAlerts();
             showNotification(`Unmarked dose for ${medicine.name}`, 'info');
         }
-    };
+    }
 
-    window.showDrugDetailsModal = (id) => {
+    function showDrugDetailsModal(id) {
         const medicine = medicines.find(m => m.id === id);
         if (medicine) {
             elements.drugModalName.textContent = medicine.name;
@@ -1366,8 +1740,10 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.drugModalCategory.textContent = medicine.info?.category || 'General Therapeutic';
             elements.drugModalUsage.textContent = medicine.info?.usage || 'Take as directed';
             elements.drugInfoModal.classList.remove('hidden');
+            void elements.drugInfoModal.offsetWidth;
+            elements.drugInfoModal.classList.add('active');
         }
-    };
+    }
 
     function saveSettings() {
         settings.enableNotifications = elements.enableNotificationsCheckbox.checked;
@@ -1379,7 +1755,10 @@ document.addEventListener('DOMContentLoaded', () => {
         saveData();
         updateSoundIconState();
         checkDrugInteractions();
-        elements.settingsModal.classList.add('hidden');
+        elements.settingsModal.classList.remove('active');
+        setTimeout(() => {
+            elements.settingsModal.classList.add('hidden');
+        }, 250);
         showNotification('Preferences updated', 'success');
     }
 
@@ -1425,6 +1804,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     elements.patientNameInput.value = json.patientInfo.name || '';
                     elements.patientDobInput.value = json.patientInfo.dob || '';
                     elements.patientContactInput.value = json.patientInfo.contact || '';
+                    elements.patientBloodType.value = json.patientInfo.bloodType || 'O+';
+                    elements.pharmacyPhoneInput.value = json.patientInfo.pharmacyPhone || '';
                     elements.patientAllergiesInput.value = json.patientInfo.allergies || '';
                     elements.doctorNameInput.value = json.patientInfo.doctorName || '';
                     elements.doctorContactInput.value = json.patientInfo.doctorContact || '';
@@ -1434,6 +1815,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderTimeline();
                 updateDashboard();
                 renderWeeklyAdherenceChart();
+                renderVitals();
+                renderSymptomsLog();
                 checkLowStockAlerts();
                 checkDrugInteractions();
                 showNotification('Data imported successfully!', 'success');
@@ -1450,6 +1833,8 @@ document.addEventListener('DOMContentLoaded', () => {
             profile: currentProfile,
             medicines,
             patientInfo: getPatientInfo(),
+            vitals: vitalsData,
+            symptoms: symptomsLog,
             exportDate: new Date().toISOString()
         };
 
@@ -1493,7 +1878,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let icsContent = [
             'BEGIN:VCALENDAR',
             'VERSION:2.0',
-            'PRODID:-//Medicine Tracker Ultra//NONSGML v3.0//EN',
+            'PRODID:-//Medicine Tracker Ultimate//NONSGML v3.5//EN',
             'CALSCALE:GREGORIAN',
             'METHOD:PUBLISH'
         ];
@@ -1533,14 +1918,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirm('Are you sure you want to clear all medicines and settings for this profile? This action cannot be undone.')) {
             medicines = [];
             medicationHistory = [];
+            symptomsLog = [];
+            vitalsData = null;
             localStorage.removeItem(getStorageKey('medicineSchedule'));
             localStorage.removeItem(getStorageKey('medicationHistory'));
             localStorage.removeItem(getStorageKey('patientInfo'));
+            localStorage.removeItem(getStorageKey('symptomsLog'));
+            localStorage.removeItem(getStorageKey('vitalsData'));
             renderSchedule();
             renderTimeline();
             updateDashboard();
             renderMedicationHistory();
             renderWeeklyAdherenceChart();
+            renderVitals();
+            renderSymptomsLog();
             checkLowStockAlerts();
             checkDrugInteractions();
             showNotification('Profile data cleared', 'info');
@@ -1591,6 +1982,8 @@ document.addEventListener('DOMContentLoaded', () => {
         activeReminderTarget = { id: medicine.id, time };
         elements.reminderModalText.textContent = `It is time to take ${medicine.name} (${medicine.dosage || '1 dose'}) scheduled for ${format12HourTime(time)}.`;
         elements.reminderAlertModal.classList.remove('hidden');
+        void elements.reminderAlertModal.offsetWidth;
+        elements.reminderAlertModal.classList.add('active');
     }
 
     function startReminderCheck() {
@@ -1631,6 +2024,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const infoTable = [
             ['Patient Name', pInfo.name || 'N/A', 'Doctor Name', pInfo.doctorName || 'N/A'],
             ['Date of Birth', pInfo.dob || 'N/A', 'Doctor Contact', pInfo.doctorContact || 'N/A'],
+            ['Blood Type', pInfo.bloodType || 'N/A', 'Pharmacy Contact', pInfo.pharmacyPhone || 'N/A'],
             ['Contact Number', pInfo.contact || 'N/A', 'Allergies', pInfo.allergies || 'None reported']
         ];
 

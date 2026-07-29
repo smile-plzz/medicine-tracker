@@ -2,6 +2,27 @@
 
 All notable changes to the Medicine Tracker application will be documented in this file.
 
+## [3.6.0] - 2026-07-29
+
+### 🎨 UI/UX Improvements
+- **Inline Handler Refactor**: Removed all inline `onclick` handlers from HTML and dynamically generated schedule rows; replaced with delegated event listeners in `src/main.js` for maintainability.
+- **Modal Animations**: Added enter/exit animations (scale + translate + opacity) with backdrop blur fade transitions for all modals.
+- **Ripple/Press Feedback**: Added scale-down + shadow shift press feedback on `.btn-primary` and `.btn-success` buttons.
+- **Schedule Table UX**: Added striped hover rows, selected-row highlight state, horizontal scroll with gradient fade, and improved empty state with contextual "Add Your First Medicine" prompt.
+- **Dashboard Enhancements**: Upgraded weekly adherence chart with segmented columns and trend indicator (▲/▼ vs yesterday delta).
+- **Form Validation Feedback**: Added inline success/error field states with icons (`✅`/`❌`), preserving user input on validation failure.
+- **Mobile Responsive Toolbar**: Added collapsible "More actions" chip for `sm` and smaller viewports in the schedule section.
+- **Accessibility Polish**: Added `role="dialog"`, `aria-modal`, `aria-label`, `aria-haspopup`, `aria-expanded` attributes to modals and interactive elements; added `focus-visible` styles and keyboard `Esc` dismiss for all modals with focus return.
+- **RxNav Loading State**: Added spinner indicator during RxNav autocomplete and drug info fetch operations.
+- **CSS Fixes**: Replaced invalid `composes: btn-base` with repeated properties; added `bounce-short` keyframes animation for reminder modal; standardized dark-mode contrast overrides for inputs, borders, and muted text.
+
+### 🩺 Ultimate Health Suite Features
+- **Emergency Medical ID Card**: Emergency ID modal displaying patient name, DOB, blood type, emergency contact, allergies, and active life-sustaining medications with quick print capability.
+- **Health Vitals Tracker**: Log and track daily Blood Pressure (mmHg), Glucose (mg/dL), Pulse Rate (BPM), and Weight.
+- **Symptom & Side Effect Logger**: Track side effects linked to specific medications with severity badges (`Mild 🟡`, `Moderate 🟠`, `Severe 🔴`) and timestamps.
+- **Dietary & Meal Caution Badges**: Visual dietary warning tags (`🥛 Take with Food`, `🍊 Avoid Grapefruit`, `🍷 Avoid Alcohol`, `⏳ Empty Stomach`).
+- **Pharmacy Contact Phone Info**: Added pharmacy phone number field with direct click-to-call integration.
+
 ## [3.0.0] - 2026-07-29
 
 ### 🚀 Ultra Features Added

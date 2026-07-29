@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medicine Tracker - Smart Medication Management</title>
+    <title>Medicine Tracker - Smart Medication & Health Manager</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="manifest" href="manifest.json">
-    <meta name="description" content="Smart medication management application with reminders, tracking, stock alerts, drug interaction checker, and health tools">
-    <meta name="keywords" content="medicine, medication, tracker, health, reminders, schedule, healthcare, rxnav, drug interactions">
+    <meta name="description" content="Comprehensive medication tracker with drug interaction checks, side effect log, vitals tracker, emergency medical ID, and refill assistant">
+    <meta name="keywords" content="medicine, medication, tracker, health, reminders, schedule, healthcare, rxnav, drug interactions, vitals, side effects, emergency id">
     <meta name="author" content="Md. Ismail Hossain">
     <meta name="theme-color" content="#3b82f6">
 
@@ -53,6 +53,14 @@
             color: #f1f5f9;
             border-color: #334155;
         }
+        :root.dark .form-input:focus, :root.dark .form-textarea:focus, :root.dark .form-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        }
+        :root.dark .form-input.invalid, :root.dark .form-textarea.invalid, :root.dark .form-select.invalid {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25) !important;
+        }
         :root.dark .btn-secondary {
             background: #1e293b;
             color: #f1f5f9;
@@ -61,6 +69,9 @@
         :root.dark .btn-secondary:hover {
             background: #334155;
         }
+        :root.dark .text-slate-400 { color: #94a3b8; }
+        :root.dark .text-slate-500 { color: #cbd5e1; }
+        :root.dark .text-slate-600 { color: #cbd5e1; }
 
         /* Modern Glassmorphism Card */
         .glass-card {
@@ -120,7 +131,17 @@
             transform: scale(0.98);
         }
         .btn-primary {
-            composes: btn-base;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.625rem;
+            border: 1px solid transparent;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            user-select: none;
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
@@ -129,8 +150,22 @@
             background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
             box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
         }
+        .btn-primary:active {
+            transform: scale(0.97);
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+        }
         .btn-secondary {
-            composes: btn-base;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.625rem;
+            border: 1px solid transparent;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            user-select: none;
             background: #ffffff;
             color: #334155;
             border-color: #cbd5e1;
@@ -140,8 +175,21 @@
             background: #f8fafc;
             border-color: #94a3b8;
         }
+        .btn-secondary:active {
+            transform: scale(0.97);
+        }
         .btn-success {
-            composes: btn-base;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.625rem;
+            border: 1px solid transparent;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            user-select: none;
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
@@ -149,8 +197,22 @@
         .btn-success:hover {
             background: linear-gradient(135deg, #059669 0%, #047857 100%);
         }
+        .btn-success:active {
+            transform: scale(0.97);
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
+        }
         .btn-purple {
-            composes: btn-base;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.625rem;
+            border: 1px solid transparent;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            user-select: none;
             background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
@@ -158,14 +220,30 @@
         .btn-purple:hover {
             background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
         }
+        .btn-purple:active {
+            transform: scale(0.97);
+        }
         .btn-danger {
-            composes: btn-base;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.625rem;
+            border: 1px solid transparent;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            user-select: none;
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
         }
         .btn-danger:hover {
             background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+        .btn-danger:active {
+            transform: scale(0.97);
         }
 
         /* Pill badges */
@@ -262,11 +340,181 @@
             z-index: 20;
         }
 
+        /* Schedule table styles */
+        .schedule-row {
+            transition: background-color 0.15s ease;
+        }
+        .schedule-row:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: -2px;
+        }
+
         /* Custom scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         :root.dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+        /* Focus visible */
+        *:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+        .btn-primary:focus-visible, .btn-success:focus-visible, .btn-purple:focus-visible, .btn-danger:focus-visible {
+            outline: 2px solid #ffffff;
+            outline-offset: 2px;
+        }
+
+        /* Modal enter/exit animations */
+        .modal-overlay {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-overlay .glass-card {
+            transform: scale(0.95) translateY(10px);
+            opacity: 0;
+            transition: transform 0.25s ease, opacity 0.25s ease;
+        }
+        .modal-overlay.active .glass-card {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        /* Ripple press feedback for primary buttons */
+        .btn-primary, .btn-success {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary::after, .btn-success::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(255,255,255,0.3) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .btn-primary:active::after, .btn-success:active::after {
+            opacity: 1;
+            transition: opacity 0s;
+        }
+
+        /* Bounce short animation for reminder modal */
+        @keyframes bounce-short {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        .animate-bounce-short {
+            animation: bounce-short 1.5s ease-in-out infinite;
+        }
+
+        /* Schedule table gradient fade for horizontal scroll */
+        .schedule-scroll-wrapper {
+            position: relative;
+        }
+        .schedule-scroll-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 40px;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.5));
+            pointer-events: none;
+            z-index: 1;
+        }
+        :root.dark .schedule-scroll-wrapper::after {
+            background: linear-gradient(to right, transparent, rgba(15, 23, 42, 0.5));
+        }
+
+        /* Selected row state */
+        .schedule-row-selected {
+            background: rgba(59, 130, 246, 0.08) !important;
+        }
+        :root.dark .schedule-row-selected {
+            background: rgba(59, 130, 246, 0.15) !important;
+        }
+
+        /* Striped table rows */
+        #schedule-table tbody tr:nth-child(even) {
+            background: rgba(241, 245, 249, 0.5);
+        }
+        :root.dark #schedule-table tbody tr:nth-child(even) {
+            background: rgba(30, 41, 59, 0.3);
+        }
+
+        /* Form validation success/error icons */
+        .field-success {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+        }
+        .field-error {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+        }
+        .field-icon {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.875rem;
+            pointer-events: none;
+        }
+        .field-icon.success { color: #10b981; }
+        .field-icon.error { color: #ef4444; }
+
+        /* Loading spinner for RxNav */
+        .rxnav-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        /* Collapsible action toolbar */
+        .action-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .action-toolbar .toolbar-chip {
+            display: none;
+        }
+        @media (max-width: 640px) {
+            .action-toolbar .toolbar-chip {
+                display: inline-flex;
+            }
+            .action-toolbar .toolbar-full {
+                display: none;
+            }
+        }
+        @media (min-width: 641px) {
+            .action-toolbar .toolbar-full {
+                display: inline-flex;
+            }
+        }
+
+        /* Mobile responsive header */
+        @media (max-width: 640px) {
+            header .flex.justify-between {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            header .flex.items-center.space-x-2.sm\:space-x-3 {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen text-slate-800 antialiased">
@@ -284,9 +532,9 @@
                     <div>
                         <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                             Medicine Tracker
-                            <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold">v3.0 Ultra</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold">v3.5 Ultimate</span>
                         </h1>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Smart Rx Manager & Safety Matrix</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Rx Management, Safety Matrix & Health Suite</p>
                     </div>
                 </div>
 
@@ -298,22 +546,28 @@
                         <option value="Family Member 2">👥 Family 2</option>
                     </select>
 
-                    <!-- Text-to-Speech Voice Assistant -->
+                    <!-- Emergency ID Card Button -->
+                    <button id="open-emergency-id-btn" class="btn-danger text-xs py-2 px-3" title="View Emergency Medical ID Card" aria-label="View Emergency Medical ID Card">
+                        <i class="fas fa-id-card mr-1"></i>
+                        <span class="hidden md:inline">Emergency ID</span>
+                    </button>
+
+                    <!-- Voice Assistant Button -->
                     <button id="voice-speak-btn" class="btn-secondary text-xs py-2 px-3" title="Read Today's Schedule Out Loud">
                         <i class="fas fa-volume-high text-purple-600 mr-1"></i>
                         <span class="hidden md:inline">Voice Readout</span>
                     </button>
 
-                    <button id="sound-toggle" class="btn-secondary text-xs sm:text-sm py-2 px-3" aria-label="Toggle Sound Reminders">
+                    <button id="sound-toggle" class="btn-secondary text-xs sm:text-sm py-2 px-3" aria-label="Toggle Sound Reminders" title="Toggle Sound Reminders">
                         <i class="fas fa-volume-up text-blue-500 mr-1.5" id="sound-icon"></i>
                         <span class="hidden sm:inline">Audio On</span>
                     </button>
 
-                    <button id="info-button" class="btn-secondary text-xs sm:text-sm py-2 px-3">
+                    <button id="info-button" class="btn-secondary text-xs sm:text-sm py-2 px-3" aria-label="Application Info" title="Info">
                         <i class="fas fa-circle-info text-slate-500 mr-1.5"></i>
                         <span class="hidden sm:inline">Info</span>
                     </button>
-                    <button id="settings-button" class="btn-secondary text-xs sm:text-sm py-2 px-3">
+                    <button id="settings-button" class="btn-secondary text-xs sm:text-sm py-2 px-3" aria-label="Application Settings" title="Settings">
                         <i class="fas fa-gear text-slate-500 mr-1.5"></i>
                         <span class="hidden sm:inline">Settings</span>
                     </button>
@@ -329,7 +583,7 @@
     <!-- Main Container -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-        <!-- Drug Interaction Safety Alert Banner (Triggered when active meds have potential interactions) -->
+        <!-- Drug Interaction Safety Alert Banner -->
         <div id="interaction-alert-banner" class="hidden no-print bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 text-rose-900 dark:text-rose-200 space-y-2">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
@@ -435,9 +689,7 @@
                 </h3>
                 <span class="text-xs text-slate-400">00:00 to 23:59</span>
             </div>
-            <div class="timeline-bar w-full my-4" id="timeline-container">
-                <!-- Timeline markers rendered dynamically -->
-            </div>
+            <div class="timeline-bar w-full my-4" id="timeline-container"></div>
             <div class="flex justify-between text-[11px] text-slate-400 font-semibold px-1">
                 <span>12 AM</span>
                 <span>6 AM</span>
@@ -447,10 +699,59 @@
             </div>
         </section>
 
+        <!-- Health Vitals & Symptom Suite Bar -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6 no-print">
+            <!-- Health Vitals Tracker Card -->
+            <div class="glass-card p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fas fa-heart-circle-check text-rose-600"></i>Health Vitals Log
+                    </h3>
+                    <span class="text-[11px] text-slate-400" id="vitals-last-updated">Not logged today</span>
+                </div>
+                <form id="vitals-form" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-500">Blood Pressure</label>
+                        <input type="text" id="vital-bp" class="form-input text-xs py-1.5" placeholder="120/80">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-500">Glucose (mg/dL)</label>
+                        <input type="number" id="vital-glucose" class="form-input text-xs py-1.5" placeholder="95">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-500">Pulse (BPM)</label>
+                        <input type="number" id="vital-pulse" class="form-input text-xs py-1.5" placeholder="72">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-500">Weight (kg/lbs)</label>
+                        <input type="text" id="vital-weight" class="form-input text-xs py-1.5" placeholder="70 kg">
+                    </div>
+                    <button type="submit" class="btn-secondary text-xs py-1.5 col-span-2 sm:col-span-4">
+                        <i class="fas fa-plus-circle mr-1 text-emerald-500"></i>Log Current Vitals
+                    </button>
+                </form>
+            </div>
+
+            <!-- Symptom & Side Effect Log Card -->
+            <div class="glass-card p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fas fa-notes-medical text-purple-600"></i>Symptom & Side Effect Tracker
+                    </h3>
+                    <button id="open-symptom-modal-btn" class="text-xs text-purple-600 font-semibold hover:underline">
+                        + Log Symptom
+                    </button>
+                </div>
+                <div id="symptoms-list-container" class="space-y-2 max-h-36 overflow-y-auto text-xs">
+                    <p class="text-slate-400 text-center py-3">No side effects logged</p>
+                </div>
+            </div>
+        </section>
+
         <!-- Main Workspace: Two-Column Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <!-- Left Sidebar Column (4 Cols): Patient Info, Doctor Info & Add Medicine Form -->
+            <!-- Left Sidebar Column (4 Cols): Patient Info, Doctor Info, Pharmacy & Add Medicine Form -->
             <div class="lg:col-span-4 space-y-6">
                 
                 <!-- Patient Profile Card -->
@@ -476,6 +777,25 @@
                             <div>
                                 <label for="patient-contact" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Contact No.</label>
                                 <input type="tel" id="patient-contact" class="form-input" placeholder="Phone #">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="patient-blood-type" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Blood Type</label>
+                                <select id="patient-blood-type" class="form-select">
+                                    <option value="O+">O Positive (O+)</option>
+                                    <option value="O-">O Negative (O-)</option>
+                                    <option value="A+">A Positive (A+)</option>
+                                    <option value="A-">A Negative (A-)</option>
+                                    <option value="B+">B Positive (B+)</option>
+                                    <option value="B-">B Negative (B-)</option>
+                                    <option value="AB+">AB Positive (AB+)</option>
+                                    <option value="AB-">AB Negative (AB-)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="pharmacy-phone" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Pharmacy Phone</label>
+                                <input type="tel" id="pharmacy-phone" class="form-input" placeholder="Pharmacy #">
                             </div>
                         </div>
                         <div>
@@ -558,7 +878,7 @@
                             <div id="time-inputs" class="space-y-2">
                                 <div class="flex items-center gap-2">
                                     <input type="time" class="form-input flex-1" name="medicine-time" required>
-                                    <button type="button" class="text-slate-400 hover:text-red-500 px-2 text-lg" aria-label="Remove time slot" onclick="removeTimeInput(this)">&times;</button>
+                                    <button type="button" class="text-slate-400 hover:text-red-500 px-2 text-lg" aria-label="Remove time slot" id="remove-time-btn">&times;</button>
                                 </div>
                             </div>
                             <button type="button" id="add-time-btn" class="mt-2 btn-secondary text-xs w-full py-2">
@@ -590,10 +910,23 @@
                             </div>
                         </div>
 
+                        <!-- Dietary Caution Tag -->
+                        <div>
+                            <label for="medicine-dietary-caution" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Dietary Caution Badge</label>
+                            <select id="medicine-dietary-caution" class="form-select">
+                                <option value="">None</option>
+                                <option value="Take with food">🥛 Take with Food / Meals</option>
+                                <option value="Empty stomach">⏳ Empty Stomach (1h before)</option>
+                                <option value="Avoid Grapefruit">🍊 Avoid Grapefruit Juice</option>
+                                <option value="Avoid Alcohol">🍷 Avoid Alcohol</option>
+                                <option value="Drink Full Glass Water">💧 Drink Full Glass of Water</option>
+                            </select>
+                        </div>
+
                         <!-- Special Instructions -->
                         <div>
-                            <label for="medicine-instructions" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Instructions / Meal Timing</label>
-                            <input type="text" id="medicine-instructions" class="form-input" placeholder="e.g., Take with meals & full glass of water">
+                            <label for="medicine-instructions" class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Instructions / Notes</label>
+                            <input type="text" id="medicine-instructions" class="form-input" placeholder="e.g., Take before bed">
                         </div>
 
                         <!-- Reminder Timing -->
@@ -619,7 +952,7 @@
             <div class="lg:col-span-8 space-y-6">
                 
                 <!-- Schedule Card -->
-                <section class="glass-card p-6 card-hover" aria-labelledby="schedule-heading">
+                <section class="glass-card p-6 card-hover no-print" aria-labelledby="schedule-heading" style="position:relative;">
                     <!-- Schedule Header Bar -->
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                         <div>
@@ -630,29 +963,41 @@
                         </div>
 
                         <!-- Action Toolbar Buttons -->
-                        <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                            <button id="download-pdf" class="btn-success text-xs py-2 px-3" title="Export printable PDF schedule">
+                        <div class="flex flex-wrap gap-2 w-full md:w-auto items-center">
+                            <button id="download-pdf" class="btn-success text-xs py-2 px-3 toolbar-full" title="Export printable PDF schedule" aria-label="Export PDF schedule">
                                 <i class="fas fa-file-pdf mr-1.5"></i>PDF
                             </button>
-                            <button id="print-pillbox-btn" class="btn-secondary text-xs py-2 px-3" title="Print Pillbox Weekly Organizer Sheet">
+                            <button id="print-pillbox-btn" class="btn-secondary text-xs py-2 px-3 toolbar-full" title="Print Pillbox Weekly Organizer Sheet" aria-label="Print pillbox sheet">
                                 <i class="fas fa-table-cells mr-1.5 text-blue-600"></i>Pillbox Sheet
                             </button>
-                            <button id="export-ical" class="btn-purple text-xs py-2 px-3" title="Export calendar events to iCal (.ics)">
+                            <button id="export-ical" class="btn-purple text-xs py-2 px-3 toolbar-full" title="Export calendar events to iCal (.ics)" aria-label="Export iCal">
                                 <i class="fas fa-calendar-plus mr-1.5"></i>iCal (.ics)
                             </button>
-                            <button id="export-csv-btn" class="btn-secondary text-xs py-2 px-3" title="Export Log CSV">
+                            <button id="export-csv-btn" class="btn-secondary text-xs py-2 px-3 toolbar-full" title="Export Log CSV" aria-label="Export CSV log">
                                 <i class="fas fa-file-csv mr-1.5 text-emerald-600"></i>CSV Log
                             </button>
-                            <button id="export-data" class="btn-secondary text-xs py-2 px-3" title="Export backup JSON data">
+                            <button id="export-data" class="btn-secondary text-xs py-2 px-3 toolbar-full" title="Export backup JSON data" aria-label="Export JSON backup">
                                 <i class="fas fa-download mr-1.5"></i>JSON
                             </button>
                             <input id="import-file" type="file" accept="application/json" class="hidden" />
-                            <button id="import-data" class="btn-secondary text-xs py-2 px-3" title="Import JSON backup">
+                            <button id="import-data" class="btn-secondary text-xs py-2 px-3 toolbar-full" title="Import JSON backup" aria-label="Import JSON backup">
                                 <i class="fas fa-upload mr-1.5"></i>Import
                             </button>
-                            <button id="reset-schedule" class="btn-danger text-xs py-2 px-3" title="Reset all data">
+                            <button id="reset-schedule" class="btn-danger text-xs py-2 px-3 toolbar-full" title="Reset all data" aria-label="Reset all data">
                                 <i class="fas fa-trash-can mr-1.5"></i>Reset
                             </button>
+                            <div class="relative">
+                                <button id="more-actions-chip" class="btn-secondary text-xs py-2 px-3 toolbar-chip" aria-label="More actions" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-vertical mr-1"></i>More
+                                </button>
+                                <div id="more-actions-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 py-1 z-50" role="menu">
+                                <button class="more-action-btn w-full text-left px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800" data-action="print-pillbox" role="menuitem"><i class="fas fa-table-cells mr-2 text-blue-600"></i>Pillbox Sheet</button>
+                                <button class="more-action-btn w-full text-left px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800" data-action="export-ical" role="menuitem"><i class="fas fa-calendar-plus mr-2 text-purple-600"></i>iCal (.ics)</button>
+                                <button class="more-action-btn w-full text-left px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800" data-action="export-csv" role="menuitem"><i class="fas fa-file-csv mr-2 text-emerald-600"></i>CSV Log</button>
+                                <button class="more-action-btn w-full text-left px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800" data-action="export-data" role="menuitem"><i class="fas fa-download mr-2"></i>JSON Export</button>
+                                <button class="more-action-btn w-full text-left px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800" data-action="import-data" role="menuitem"><i class="fas fa-upload mr-2"></i>JSON Import</button>
+                                <button class="more-action-btn w-full text-left px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800" data-action="reset-schedule" role="menuitem"><i class="fas fa-trash-can mr-2 text-rose-600"></i>Reset All</button>
+                            </div>
                         </div>
                     </div>
 
@@ -681,33 +1026,36 @@
                         </div>
                     </div>
 
-                    <!-- Dynamic Table View -->
-                    <div class="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-slate-800">
-                        <table id="schedule-table" class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                            <thead class="bg-slate-100/70 dark:bg-slate-900/80">
-                                <tr>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Time</th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Medicine & Form</th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Dosage</th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Stock</th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                                    <th scope="col" class="px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800">
-                                <!-- Dynamic rows rendered here -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Empty State Message -->
-                    <div id="empty-schedule" class="text-center py-12 px-4">
-                        <div class="w-16 h-16 rounded-full bg-blue-50 dark:bg-slate-800 text-blue-500 mx-auto flex items-center justify-center text-3xl mb-3">
-                            <i class="fas fa-prescription-bottle-medical"></i>
+<!-- Dynamic Table View -->
+                        <div class="schedule-scroll-wrapper overflow-x-auto rounded-xl border border-slate-200/80 dark:border-slate-800">
+                            <table id="schedule-table" class="min-w-full divide-y divide-slate-200 dark:divide-slate-800" style="min-width:640px;">
+                                <thead class="bg-slate-100/70 dark:bg-slate-900/80">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Time</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Medicine & Form</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Dosage</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Stock</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800">
+                                    <!-- Dynamic rows rendered here -->
+                                </tbody>
+                            </table>
                         </div>
-                        <h3 class="text-base font-bold text-slate-800 dark:text-slate-200">No medicines scheduled</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">Fill in the form on the left to create your personalized daily medication tracker.</p>
-                    </div>
+
+                        <!-- Empty State Message -->
+                        <div id="empty-schedule" class="text-center py-12 px-4">
+                            <div class="w-16 h-16 rounded-full bg-blue-50 dark:bg-slate-800 text-blue-500 mx-auto flex items-center justify-center text-3xl mb-3">
+                                <i class="fas fa-prescription-bottle-medical"></i>
+                            </div>
+                            <h3 class="text-base font-bold text-slate-800 dark:text-slate-200">No medicines scheduled</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">Your medication schedule is empty. Add a medicine using the form on the left to get started.</p>
+                            <button id="empty-state-add-btn" class="btn-primary text-xs py-2 px-4 mt-4">
+                                <i class="fas fa-plus mr-1"></i>Add Your First Medicine
+                            </button>
+                        </div>
                 </section>
 
                 <!-- 7-Day Compliance & Adherence History Card -->
@@ -719,9 +1067,7 @@
                         <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Past 7 Days</span>
                     </div>
 
-                    <div id="weekly-adherence-chart" class="grid grid-cols-7 gap-2 pt-2 pb-1">
-                        <!-- Rendered dynamically -->
-                    </div>
+                    <div id="weekly-adherence-chart" class="grid grid-cols-7 gap-2 pt-2 pb-1"></div>
                 </section>
 
                 <!-- Medication History Log -->
@@ -734,25 +1080,90 @@
                             Clear Log
                         </button>
                     </div>
-                    <div id="medication-history" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-                        <!-- History logs inserted dynamically -->
-                    </div>
+                    <div id="medication-history" class="space-y-2.5 max-h-60 overflow-y-auto pr-1"></div>
                 </section>
 
             </div>
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white/60 dark:bg-slate-900/60 border-t border-slate-200 dark:border-slate-800 py-6 mt-12 no-print">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-500 dark:text-slate-400">
-            <p>© 2026 Medicine Tracker Ultra v3.0 — Designed by Md. Ismail Hossain</p>
-            <p class="mt-1 text-slate-400">Disclaimer: Always verify medication instructions with your licensed healthcare provider.</p>
+    <!-- Emergency Medical ID Card Modal -->
+    <div id="emergency-id-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="emergency-modal-title">
+        <div class="glass-card max-w-md w-full p-6 relative border-2 border-rose-500/50">
+            <button id="close-emergency-modal-x" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-600 flex items-center justify-center text-2xl">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-extrabold text-slate-900 dark:text-white">Emergency Medical ID Card</h3>
+                    <p class="text-xs text-slate-500">First Responder & Emergency Summary</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-xs bg-slate-50 dark:bg-slate-900/80 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div class="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                    <span class="font-bold text-slate-500">Patient Name</span>
+                    <span id="em-id-name" class="font-extrabold text-slate-900 dark:text-white">--</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                    <span class="font-bold text-slate-500">Blood Type</span>
+                    <span id="em-id-blood" class="font-extrabold text-rose-600">--</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                    <span class="font-bold text-slate-500">Emergency Phone</span>
+                    <span id="em-id-phone" class="font-bold">--</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                    <span class="font-bold text-slate-500">Known Allergies</span>
+                    <span id="em-id-allergies" class="font-semibold text-amber-600">--</span>
+                </div>
+                <div>
+                    <span class="font-bold text-slate-500 block mb-1">Active Life-Sustaining Rx</span>
+                    <ul id="em-id-meds-list" class="list-disc pl-4 space-y-0.5 font-medium text-slate-800 dark:text-slate-200"></ul>
+                </div>
+            </div>
+
+            <div class="mt-5 flex gap-2">
+                <button id="print-emergency-id-btn" class="btn-success flex-1 text-xs py-2 px-3" aria-label="Print Emergency ID Card">
+                    <i class="fas fa-print mr-1.5"></i>Print ID Card
+                </button>
+                <button id="close-emergency-modal" class="btn-secondary flex-1 text-xs py-2 px-3">Close</button>
+            </div>
         </div>
-    </footer>
+    </div>
+
+    <!-- Symptom Logger Modal -->
+    <div id="symptom-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="symptom-modal-title">
+        <div class="glass-card max-w-md w-full p-6 relative">
+            <button id="close-symptom-modal-x" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <i class="fas fa-notes-medical text-purple-600"></i>Log Side Effect / Symptom
+            </h3>
+            <form id="symptom-form" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">Associated Medication</label>
+                    <select id="symptom-med-select" class="form-select"></select>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Severity Level</label>
+                    <select id="symptom-severity" class="form-select">
+                        <option value="Mild">Mild 🟡</option>
+                        <option value="Moderate">Moderate 🟠</option>
+                        <option value="Severe">Severe 🔴</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Symptom Description</label>
+                    <textarea id="symptom-notes" class="form-textarea" rows="3" required placeholder="e.g., Mild dizziness 30 mins after dose..."></textarea>
+                </div>
+                <button type="submit" class="btn-primary w-full py-2.5 mt-2">Log Symptom</button>
+            </form>
+        </div>
+    </div>
 
     <!-- Refill Request Generator Modal -->
-    <div id="refill-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div id="refill-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="refill-modal-title">
         <div class="glass-card max-w-lg w-full p-6 relative">
             <button id="close-refill-modal-x" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">&times;</button>
             <div class="flex items-center space-x-3 mb-4">
@@ -778,7 +1189,7 @@
     </div>
 
     <!-- Printable Pillbox Organizer Modal -->
-    <div id="pillbox-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div id="pillbox-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="pillbox-modal-title">
         <div class="glass-card max-w-4xl w-full p-6 relative max-h-[90vh] overflow-y-auto">
             <button id="close-pillbox-modal-x" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">&times;</button>
             <div class="flex items-center justify-between mb-4">
@@ -791,7 +1202,7 @@
                         <p class="text-xs text-slate-500">Physical pillbox packing matrix for Mon-Sun</p>
                     </div>
                 </div>
-                <button onclick="window.print()" class="btn-success text-xs py-2 px-3 no-print">
+                <button id="print-pillbox-btn-modal" class="btn-success text-xs py-2 px-3 no-print" aria-label="Print Pillbox Sheet">
                     <i class="fas fa-print mr-1.5"></i>Print Sheet
                 </button>
             </div>
@@ -810,9 +1221,7 @@
                             <th class="p-2.5 font-bold">Sun</th>
                         </tr>
                     </thead>
-                    <tbody id="pillbox-table-body" class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                        <!-- Pillbox rows -->
-                    </tbody>
+                    <tbody id="pillbox-table-body" class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900"></tbody>
                 </table>
             </div>
 
@@ -821,16 +1230,16 @@
     </div>
 
     <!-- Info Modal -->
-    <div id="info-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div id="info-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="info-modal-title">
         <div class="glass-card max-w-md w-full p-6 relative">
             <button id="close-modal-x" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">&times;</button>
             <div class="text-center">
                 <div class="w-12 h-12 bg-blue-500/10 text-blue-600 rounded-2xl mx-auto flex items-center justify-center text-2xl mb-3">
                     <i class="fas fa-heart-pulse"></i>
                 </div>
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white">About Medicine Tracker Ultra</h3>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">About Medicine Tracker Ultimate</h3>
                 <p class="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
-                    Medicine Tracker Ultra v3.0 is a comprehensive healthcare application with RxNav Drug Interaction Safety checking, Web Audio reminders, 24-hour visual timeline, family profiles, refill requests, iCal sync, and PDF exporting.
+                    Medicine Tracker Ultimate v3.5 is a personal health suite featuring RxNav Drug Interaction Safety checking, Web Audio reminders, vitals log, symptom tracker, Emergency ID card, 24-hour timeline, family profiles, refill requests, iCal sync, and PDF exporting.
                 </p>
                 <div class="mt-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-left space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
                     <p><strong>Developer:</strong> Md. Ismail Hossain</p>
@@ -843,7 +1252,7 @@
     </div>
 
     <!-- Drug Info Modal -->
-    <div id="drug-info-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div id="drug-info-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="drug-modal-title">
         <div class="glass-card max-w-lg w-full p-6 relative">
             <button id="close-drug-modal-x" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">&times;</button>
             <div class="flex items-center space-x-3 mb-4">
@@ -878,7 +1287,7 @@
     </div>
 
     <!-- Active Due Dose Reminder Modal -->
-    <div id="reminder-alert-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div id="reminder-alert-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="reminder-modal-title">
         <div class="glass-card max-w-md w-full p-6 text-center border-2 border-blue-500 animate-bounce-short">
             <div class="w-16 h-16 rounded-full bg-blue-500/20 text-blue-600 mx-auto flex items-center justify-center text-3xl mb-4 animate-pulse">
                 <i class="fas fa-bell"></i>
@@ -898,7 +1307,7 @@
     </div>
 
     <!-- Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
         <div class="glass-card max-w-md w-full p-6 relative">
             <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <i class="fas fa-gear text-slate-600"></i>Application Preferences
