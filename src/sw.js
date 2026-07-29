@@ -1,4 +1,4 @@
-const CACHE_NAME = 'medicine-tracker-v2';
+const CACHE_NAME = 'medicine-tracker-v3';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -10,12 +10,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
-  );
-});
-
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(response => response || fetch(event.request))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -27,6 +22,22 @@ self.addEventListener('activate', event => {
           return caches.delete(cacheName);
         }
       })
-    ))
+    )).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    fetch(event.request).then(response => {
+      if (response && response.status === 200) {
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, responseClone);
+        });
+      }
+      return response;
+    }).catch(() => {
+      return caches.match(event.request);
+    })
   );
 });
