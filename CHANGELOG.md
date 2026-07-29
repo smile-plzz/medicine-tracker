@@ -2,6 +2,18 @@
 
 All notable changes to the Medicine Tracker application will be documented in this file.
 
+## [3.0.0] - 2026-07-29
+
+### 🚀 Ultra Features Added
+- **RxNav Drug-Drug Interaction Safety Matrix**: Automated multi-drug interaction checking via NIH RxNav API with real-time safety warnings.
+- **24-Hour Visual Daily Timeline**: Interactive 24-hour timeline bar rendering glowing color-coded marker dots for all scheduled doses across the day.
+- **Text-to-Speech Voice Assistant**: Voice readout button using Web SpeechSynthesis API to speak today's medication protocol out loud.
+- **Prescription Refill Request Generator**: Auto-generates clean, copyable email/text refill requests for physicians or pharmacies.
+- **Printable Weekly Pillbox Organizer Sheet**: Interactive modal rendering a Mon-Sun x Morning/Afternoon/Evening/Night pillbox packing matrix designed specifically for printing.
+- **Multi-User / Family Profile Switcher**: Switch between independent family member profiles (Primary, Family 1, Family 2) stored seamlessly in localStorage.
+- **Adherence Streak Counter**: Consecutive day adherence streak calculator (`🔥 Xd Streak`) encouraging medication compliance.
+- **CSV History Exporter**: Export complete dose action logs as structured CSV files.
+
 ## [2.5.0] - 2026-07-29
 
 ### ✨ Added & Enhanced

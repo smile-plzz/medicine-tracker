@@ -6,8 +6,8 @@
     <title>Medicine Tracker - Smart Medication Management</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="manifest" href="manifest.json">
-    <meta name="description" content="Smart medication management application with reminders, tracking, stock alerts, and comprehensive health tools">
-    <meta name="keywords" content="medicine, medication, tracker, health, reminders, schedule, healthcare, rxnav">
+    <meta name="description" content="Smart medication management application with reminders, tracking, stock alerts, drug interaction checker, and health tools">
+    <meta name="keywords" content="medicine, medication, tracker, health, reminders, schedule, healthcare, rxnav, drug interactions">
     <meta name="author" content="Md. Ismail Hossain">
     <meta name="theme-color" content="#3b82f6">
 
@@ -235,6 +235,33 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* Timeline styles */
+        .timeline-bar {
+            position: relative;
+            height: 12px;
+            background: rgba(226, 232, 240, 0.8);
+            border-radius: 6px;
+        }
+        :root.dark .timeline-bar {
+            background: rgba(30, 41, 59, 0.8);
+        }
+        .timeline-marker {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .timeline-marker:hover {
+            transform: translate(-50%, -50%) scale(1.3);
+            z-index: 20;
+        }
+
         /* Custom scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -257,16 +284,31 @@
                     <div>
                         <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                             Medicine Tracker
-                            <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold">v2.5 Pro</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold">v3.0 Ultra</span>
                         </h1>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Intelligent Rx Tracking & Schedule Manager</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Smart Rx Manager & Safety Matrix</p>
                     </div>
                 </div>
+
                 <div class="flex items-center space-x-2 sm:space-x-3">
+                    <!-- Profile Switcher -->
+                    <select id="profile-selector" class="form-select text-xs py-1.5 px-2.5 max-w-[130px] font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800">
+                        <option value="Primary">👤 Primary</option>
+                        <option value="Family Member 1">👥 Family 1</option>
+                        <option value="Family Member 2">👥 Family 2</option>
+                    </select>
+
+                    <!-- Text-to-Speech Voice Assistant -->
+                    <button id="voice-speak-btn" class="btn-secondary text-xs py-2 px-3" title="Read Today's Schedule Out Loud">
+                        <i class="fas fa-volume-high text-purple-600 mr-1"></i>
+                        <span class="hidden md:inline">Voice Readout</span>
+                    </button>
+
                     <button id="sound-toggle" class="btn-secondary text-xs sm:text-sm py-2 px-3" aria-label="Toggle Sound Reminders">
                         <i class="fas fa-volume-up text-blue-500 mr-1.5" id="sound-icon"></i>
                         <span class="hidden sm:inline">Audio On</span>
                     </button>
+
                     <button id="info-button" class="btn-secondary text-xs sm:text-sm py-2 px-3">
                         <i class="fas fa-circle-info text-slate-500 mr-1.5"></i>
                         <span class="hidden sm:inline">Info</span>
@@ -286,8 +328,27 @@
 
     <!-- Main Container -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Drug Interaction Safety Alert Banner (Triggered when active meds have potential interactions) -->
+        <div id="interaction-alert-banner" class="hidden no-print bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 text-rose-900 dark:text-rose-200 space-y-2">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-lg bg-rose-500/20 flex items-center justify-center text-rose-600 dark:text-rose-400">
+                        <i class="fas fa-shield-virus text-lg"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm">RxNav Drug Interaction Safety Warning</h4>
+                        <p id="interaction-alert-summary" class="text-xs text-rose-800 dark:text-rose-300">Checking safety matrix...</p>
+                    </div>
+                </div>
+                <button id="dismiss-interaction-banner" class="text-rose-700 dark:text-rose-400 hover:text-rose-900 text-sm">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+            <div id="interaction-details-list" class="pl-12 text-xs space-y-1 text-rose-700 dark:text-rose-300 font-medium"></div>
+        </div>
         
-        <!-- Stock / Low Inventory Warning Banner (Shown dynamically when any medicine is low on pills) -->
+        <!-- Stock / Low Inventory Warning Banner -->
         <div id="low-stock-banner" class="hidden no-print bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex items-center justify-between text-amber-900 dark:text-amber-200">
             <div class="flex items-center space-x-3">
                 <div class="w-9 h-9 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
@@ -298,9 +359,14 @@
                     <p id="low-stock-text" class="text-xs text-amber-800 dark:text-amber-300">Some medications are low in stock and need refilling soon.</p>
                 </div>
             </div>
-            <button id="dismiss-stock-banner" class="text-amber-700 dark:text-amber-400 hover:text-amber-900 text-sm">
-                <i class="fas fa-xmark"></i>
-            </button>
+            <div class="flex items-center gap-2">
+                <button id="open-refill-modal-btn" class="btn-secondary text-xs py-1 px-2.5">
+                    <i class="fas fa-paper-plane mr-1 text-amber-600"></i>Request Refill
+                </button>
+                <button id="dismiss-stock-banner" class="text-amber-700 dark:text-amber-400 hover:text-amber-900 text-sm">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
         </div>
 
         <!-- Metric Dashboard Cards -->
@@ -329,10 +395,13 @@
                 </div>
             </div>
 
-            <!-- Adherence Rate Ring Card -->
+            <!-- Adherence Rate Ring & Streak Card -->
             <div class="glass-card p-5 card-hover flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Adherence Rate</p>
+                    <div class="flex items-center gap-1.5">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Adherence Rate</p>
+                        <span id="streak-badge" class="text-[10px] font-extrabold text-orange-600 bg-orange-100 dark:bg-orange-950/60 px-1.5 py-0.5 rounded-full">🔥 0d</span>
+                    </div>
                     <p id="adherence-rate" class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">0%</p>
                     <p class="text-xs text-purple-600 dark:text-purple-400 mt-1 font-medium" id="adherence-label">No doses scheduled</p>
                 </div>
@@ -358,6 +427,26 @@
             </div>
         </section>
 
+        <!-- Interactive 24-Hour Visual Schedule Timeline -->
+        <section class="glass-card p-5 no-print space-y-3">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i class="fas fa-chart-gantt text-blue-600"></i>24-Hour Daily Dose Timeline
+                </h3>
+                <span class="text-xs text-slate-400">00:00 to 23:59</span>
+            </div>
+            <div class="timeline-bar w-full my-4" id="timeline-container">
+                <!-- Timeline markers rendered dynamically -->
+            </div>
+            <div class="flex justify-between text-[11px] text-slate-400 font-semibold px-1">
+                <span>12 AM</span>
+                <span>6 AM</span>
+                <span>12 PM</span>
+                <span>6 PM</span>
+                <span>11:59 PM</span>
+            </div>
+        </section>
+
         <!-- Main Workspace: Two-Column Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
@@ -368,7 +457,7 @@
                 <section class="glass-card p-6 no-print card-hover" aria-labelledby="patient-info-heading">
                     <div class="flex items-center justify-between mb-4">
                         <h2 id="patient-info-heading" class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            <i class="fas fa-user-circle text-blue-600"></i>Patient Info
+                            <i class="fas fa-user-circle text-blue-600"></i>Patient Profile
                         </h2>
                         <button id="toggle-patient-details" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">
                             Toggle Details
@@ -545,11 +634,17 @@
                             <button id="download-pdf" class="btn-success text-xs py-2 px-3" title="Export printable PDF schedule">
                                 <i class="fas fa-file-pdf mr-1.5"></i>PDF
                             </button>
+                            <button id="print-pillbox-btn" class="btn-secondary text-xs py-2 px-3" title="Print Pillbox Weekly Organizer Sheet">
+                                <i class="fas fa-table-cells mr-1.5 text-blue-600"></i>Pillbox Sheet
+                            </button>
                             <button id="export-ical" class="btn-purple text-xs py-2 px-3" title="Export calendar events to iCal (.ics)">
                                 <i class="fas fa-calendar-plus mr-1.5"></i>iCal (.ics)
                             </button>
+                            <button id="export-csv-btn" class="btn-secondary text-xs py-2 px-3" title="Export Log CSV">
+                                <i class="fas fa-file-csv mr-1.5 text-emerald-600"></i>CSV Log
+                            </button>
                             <button id="export-data" class="btn-secondary text-xs py-2 px-3" title="Export backup JSON data">
-                                <i class="fas fa-download mr-1.5"></i>JSON Export
+                                <i class="fas fa-download mr-1.5"></i>JSON
                             </button>
                             <input id="import-file" type="file" accept="application/json" class="hidden" />
                             <button id="import-data" class="btn-secondary text-xs py-2 px-3" title="Import JSON backup">
@@ -651,10 +746,79 @@
     <!-- Footer -->
     <footer class="bg-white/60 dark:bg-slate-900/60 border-t border-slate-200 dark:border-slate-800 py-6 mt-12 no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-500 dark:text-slate-400">
-            <p>© 2026 Medicine Tracker Pro — Designed by Md. Ismail Hossain</p>
+            <p>© 2026 Medicine Tracker Ultra v3.0 — Designed by Md. Ismail Hossain</p>
             <p class="mt-1 text-slate-400">Disclaimer: Always verify medication instructions with your licensed healthcare provider.</p>
         </div>
     </footer>
+
+    <!-- Refill Request Generator Modal -->
+    <div id="refill-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="glass-card max-w-lg w-full p-6 relative">
+            <button id="close-refill-modal-x" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center text-xl">
+                    <i class="fas fa-paper-plane"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Prescription Refill Request</h3>
+                    <p class="text-xs text-slate-500">Auto-generated email/text for your doctor or pharmacy</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <textarea id="refill-text-area" class="form-textarea h-40 font-mono text-[11px]" readonly></textarea>
+                <div class="flex justify-end gap-2">
+                    <button id="copy-refill-text-btn" class="btn-primary text-xs py-2 px-4">
+                        <i class="fas fa-copy mr-1.5"></i>Copy to Clipboard
+                    </button>
+                    <button id="close-refill-modal" class="btn-secondary text-xs py-2 px-4">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Printable Pillbox Organizer Modal -->
+    <div id="pillbox-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="glass-card max-w-4xl w-full p-6 relative max-h-[90vh] overflow-y-auto">
+            <button id="close-pillbox-modal-x" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center text-xl">
+                        <i class="fas fa-table-cells"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Weekly Pillbox Organizer Sheet</h3>
+                        <p class="text-xs text-slate-500">Physical pillbox packing matrix for Mon-Sun</p>
+                    </div>
+                </div>
+                <button onclick="window.print()" class="btn-success text-xs py-2 px-3 no-print">
+                    <i class="fas fa-print mr-1.5"></i>Print Sheet
+                </button>
+            </div>
+
+            <div class="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl">
+                <table class="min-w-full text-xs text-left divide-y divide-slate-200 dark:divide-slate-800">
+                    <thead class="bg-slate-100 dark:bg-slate-900">
+                        <tr>
+                            <th class="p-2.5 font-bold">Time Slot</th>
+                            <th class="p-2.5 font-bold">Mon</th>
+                            <th class="p-2.5 font-bold">Tue</th>
+                            <th class="p-2.5 font-bold">Wed</th>
+                            <th class="p-2.5 font-bold">Thu</th>
+                            <th class="p-2.5 font-bold">Fri</th>
+                            <th class="p-2.5 font-bold">Sat</th>
+                            <th class="p-2.5 font-bold">Sun</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pillbox-table-body" class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                        <!-- Pillbox rows -->
+                    </tbody>
+                </table>
+            </div>
+
+            <button id="close-pillbox-modal" class="btn-secondary w-full mt-5 py-2.5 no-print">Close</button>
+        </div>
+    </div>
 
     <!-- Info Modal -->
     <div id="info-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
@@ -664,9 +828,9 @@
                 <div class="w-12 h-12 bg-blue-500/10 text-blue-600 rounded-2xl mx-auto flex items-center justify-center text-2xl mb-3">
                     <i class="fas fa-heart-pulse"></i>
                 </div>
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white">About Medicine Tracker</h3>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">About Medicine Tracker Ultra</h3>
                 <p class="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
-                    Medicine Tracker is an advanced personal medication assistant featuring RxNav API integration, sound reminders, inventory tracking, iCal sync, and PDF schedule export.
+                    Medicine Tracker Ultra v3.0 is a comprehensive healthcare application with RxNav Drug Interaction Safety checking, Web Audio reminders, 24-hour visual timeline, family profiles, refill requests, iCal sync, and PDF exporting.
                 </p>
                 <div class="mt-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-left space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
                     <p><strong>Developer:</strong> Md. Ismail Hossain</p>
@@ -678,7 +842,7 @@
         </div>
     </div>
 
-    <!-- Drug Info Modal (RxNav API detailed properties) -->
+    <!-- Drug Info Modal -->
     <div id="drug-info-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="glass-card max-w-lg w-full p-6 relative">
             <button id="close-drug-modal-x" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">&times;</button>
@@ -747,6 +911,10 @@
                 <label class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl cursor-pointer">
                     <span class="font-semibold">Audio Reminder Alarm Sound</span>
                     <input type="checkbox" id="enable-audio" class="w-4 h-4 text-blue-600 rounded" checked>
+                </label>
+                <label class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl cursor-pointer">
+                    <span class="font-semibold">RxNav Safety Interaction Checking</span>
+                    <input type="checkbox" id="enable-interaction-check" class="w-4 h-4 text-blue-600 rounded" checked>
                 </label>
                 <label class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl cursor-pointer">
                     <span class="font-semibold">Auto-save changes to localStorage</span>

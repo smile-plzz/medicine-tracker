@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Medicine Tracker App Pro v2.5 initialized");
+    console.log("Medicine Tracker Ultra v3.0 initialized");
 
-    // Global Application State
+    // Global Application State & Storage Keys
+    let currentProfile = 'Primary';
     let medicines = [];
     let medicationHistory = [];
     let currentEditingMedicineId = null;
@@ -11,19 +12,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let settings = {
         enableNotifications: false,
         enableAudio: true,
+        enableInteractionCheck: true,
         autoSave: true,
         defaultReminder: 10
     };
 
     // Color Swatch Mapping
     const colorClasses = {
-        blue: { bg: 'bg-blue-100 dark:bg-blue-900/40', text: 'text-blue-700 dark:text-blue-300', border: 'border-blue-300 dark:border-blue-700', dot: 'bg-blue-500' },
-        emerald: { bg: 'bg-emerald-100 dark:bg-emerald-900/40', text: 'text-emerald-700 dark:text-emerald-300', border: 'border-emerald-300 dark:border-emerald-700', dot: 'bg-emerald-500' },
-        purple: { bg: 'bg-purple-100 dark:bg-purple-900/40', text: 'text-purple-700 dark:text-purple-300', border: 'border-purple-300 dark:border-purple-700', dot: 'bg-purple-500' },
-        amber: { bg: 'bg-amber-100 dark:bg-amber-900/40', text: 'text-amber-700 dark:text-amber-300', border: 'border-amber-300 dark:border-amber-700', dot: 'bg-amber-500' },
-        rose: { bg: 'bg-rose-100 dark:bg-rose-900/40', text: 'text-rose-700 dark:text-rose-300', border: 'border-rose-300 dark:border-rose-700', dot: 'bg-rose-500' },
-        cyan: { bg: 'bg-cyan-100 dark:bg-cyan-900/40', text: 'text-cyan-700 dark:text-cyan-300', border: 'border-cyan-300 dark:border-cyan-700', dot: 'bg-cyan-500' },
-        slate: { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-300', border: 'border-slate-300 dark:border-slate-700', dot: 'bg-slate-500' }
+        blue: { bg: 'bg-blue-100 dark:bg-blue-900/40', text: 'text-blue-700 dark:text-blue-300', border: 'border-blue-300 dark:border-blue-700', dot: '#3b82f6' },
+        emerald: { bg: 'bg-emerald-100 dark:bg-emerald-900/40', text: 'text-emerald-700 dark:text-emerald-300', border: 'border-emerald-300 dark:border-emerald-700', dot: '#10b981' },
+        purple: { bg: 'bg-purple-100 dark:bg-purple-900/40', text: 'text-purple-700 dark:text-purple-300', border: 'border-purple-300 dark:border-purple-700', dot: '#8b5cf6' },
+        amber: { bg: 'bg-amber-100 dark:bg-amber-900/40', text: 'text-amber-700 dark:text-amber-300', border: 'border-amber-300 dark:border-amber-700', dot: '#f59e0b' },
+        rose: { bg: 'bg-rose-100 dark:bg-rose-900/40', text: 'text-rose-700 dark:text-rose-300', border: 'border-rose-300 dark:border-rose-700', dot: '#ef4444' },
+        cyan: { bg: 'bg-cyan-100 dark:bg-cyan-900/40', text: 'text-cyan-700 dark:text-cyan-300', border: 'border-cyan-300 dark:border-cyan-700', dot: '#06b6d4' },
+        slate: { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-300', border: 'border-slate-300 dark:border-slate-700', dot: '#64748b' }
     };
 
     const formIcons = {
@@ -37,7 +39,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // DOM Elements Mapping
     const elements = {
-        // Forms & Form inputs
+        // Navigation & Top Toolbar
+        profileSelector: document.getElementById('profile-selector'),
+        voiceSpeakBtn: document.getElementById('voice-speak-btn'),
+        soundToggle: document.getElementById('sound-toggle'),
+        soundIcon: document.getElementById('sound-icon'),
+        infoButton: document.getElementById('info-button'),
+        settingsButton: document.getElementById('settings-button'),
+        themeToggle: document.getElementById('theme-toggle'),
+        themeIcon: document.getElementById('theme-icon'),
+
+        // Banners
+        interactionAlertBanner: document.getElementById('interaction-alert-banner'),
+        interactionAlertSummary: document.getElementById('interaction-alert-summary'),
+        interactionDetailsList: document.getElementById('interaction-details-list'),
+        dismissInteractionBannerBtn: document.getElementById('dismiss-interaction-banner'),
+        lowStockBanner: document.getElementById('low-stock-banner'),
+        lowStockText: document.getElementById('low-stock-text'),
+        dismissStockBannerBtn: document.getElementById('dismiss-stock-banner'),
+        openRefillModalBtn: document.getElementById('open-refill-modal-btn'),
+
+        // Timeline
+        timelineContainer: document.getElementById('timeline-container'),
+
+        // Form & Form Inputs
         medicineForm: document.getElementById('medicine-form'),
         medicineNameInput: document.getElementById('medicine-name'),
         autocompleteSuggestions: document.getElementById('autocomplete-suggestions'),
@@ -66,19 +91,14 @@ document.addEventListener('DOMContentLoaded', () => {
         togglePatientDetailsBtn: document.getElementById('toggle-patient-details'),
         patientFieldsContainer: document.getElementById('patient-fields'),
 
-        // Low stock warning banner
-        lowStockBanner: document.getElementById('low-stock-banner'),
-        lowStockText: document.getElementById('low-stock-text'),
-        dismissStockBannerBtn: document.getElementById('dismiss-stock-banner'),
-
-        // Table & Schedule Display
+        // Schedule & Table
         scheduleTableBody: document.querySelector('#schedule-table tbody'),
         emptyScheduleMessage: document.getElementById('empty-schedule'),
         searchMedicineInput: document.getElementById('search-medicine'),
         filterTimeSelect: document.getElementById('filter-time'),
         filterStatusSelect: document.getElementById('filter-status'),
 
-        // Metrics Dashboard
+        // Dashboard Cards
         totalMedicines: document.getElementById('total-medicines'),
         activePrescriptionsCount: document.getElementById('active-prescriptions-count'),
         todayDoses: document.getElementById('today-doses'),
@@ -86,31 +106,42 @@ document.addEventListener('DOMContentLoaded', () => {
         adherenceRate: document.getElementById('adherence-rate'),
         adherenceLabel: document.getElementById('adherence-label'),
         adherenceRing: document.getElementById('adherence-ring'),
+        streakBadge: document.getElementById('streak-badge'),
         nextDose: document.getElementById('next-dose'),
         nextDoseMedName: document.getElementById('next-dose-med-name'),
         weeklyAdherenceChart: document.getElementById('weekly-adherence-chart'),
 
-        // Toolbar Buttons
+        // Action Toolbar
         downloadPdfButton: document.getElementById('download-pdf'),
+        printPillboxBtn: document.getElementById('print-pillbox-btn'),
         exportICalButton: document.getElementById('export-ical'),
+        exportCsvBtn: document.getElementById('export-csv-btn'),
         exportDataButton: document.getElementById('export-data'),
         resetScheduleButton: document.getElementById('reset-schedule'),
-        infoButton: document.getElementById('info-button'),
-        settingsButton: document.getElementById('settings-button'),
-        soundToggle: document.getElementById('sound-toggle'),
-        soundIcon: document.getElementById('sound-icon'),
+        importDataButton: document.getElementById('import-data'),
+        importFileInput: document.getElementById('import-file'),
 
         // Modals
         infoModal: document.getElementById('info-modal'),
         settingsModal: document.getElementById('settings-modal'),
         drugInfoModal: document.getElementById('drug-info-modal'),
         reminderAlertModal: document.getElementById('reminder-alert-modal'),
+        refillModal: document.getElementById('refill-modal'),
+        pillboxModal: document.getElementById('pillbox-modal'),
         closeModalButton: document.getElementById('close-modal'),
         closeModalX: document.getElementById('close-modal-x'),
         closeSettingsButton: document.getElementById('close-settings'),
         saveSettingsButton: document.getElementById('save-settings'),
         closeDrugModalBtn: document.getElementById('close-drug-modal'),
         closeDrugModalX: document.getElementById('close-drug-modal-x'),
+        closeRefillModalBtn: document.getElementById('close-refill-modal'),
+        closeRefillModalX: document.getElementById('close-refill-modal-x'),
+        copyRefillTextBtn: document.getElementById('copy-refill-text-btn'),
+        refillTextArea: document.getElementById('refill-text-area'),
+        closePillboxModalBtn: document.getElementById('close-pillbox-modal'),
+        closePillboxModalX: document.getElementById('close-pillbox-modal-x'),
+        pillboxTableBody: document.getElementById('pillbox-table-body'),
+
         drugModalName: document.getElementById('drug-modal-name'),
         drugModalGeneric: document.getElementById('drug-modal-generic'),
         drugModalCategory: document.getElementById('drug-modal-category'),
@@ -119,22 +150,17 @@ document.addEventListener('DOMContentLoaded', () => {
         reminderTakeBtn: document.getElementById('reminder-take-btn'),
         reminderSnoozeBtn: document.getElementById('reminder-snooze-btn'),
 
-        // Settings Controls
+        // Settings inputs
         enableNotificationsCheckbox: document.getElementById('enable-notifications'),
         enableAudioCheckbox: document.getElementById('enable-audio'),
+        enableInteractionCheckCheckbox: document.getElementById('enable-interaction-check'),
         autoSaveCheckbox: document.getElementById('auto-save'),
         defaultReminderSelect: document.getElementById('default-reminder'),
 
         // History
         medicationHistoryContainer: document.getElementById('medication-history'),
         clearHistoryBtn: document.getElementById('clear-history-btn'),
-
-        // Notifications & Imports
-        notificationContainer: document.getElementById('notification-container'),
-        themeToggle: document.getElementById('theme-toggle'),
-        themeIcon: document.getElementById('theme-icon'),
-        importDataButton: document.getElementById('import-data'),
-        importFileInput: document.getElementById('import-file')
+        notificationContainer: document.getElementById('notification-container')
     };
 
     // Helper: Local Date Format (YYYY-MM-DD) avoiding UTC shifts
@@ -153,24 +179,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const minutes = minutesStr || '00';
         const ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12;
-        hours = hours ? hours : 12; // 0 should be 12
+        hours = hours ? hours : 12;
         return `${hours}:${minutes} ${ampm}`;
     }
 
-    // Application Initialization
+    // App Initialization
     function init() {
         loadData();
         setupEventListeners();
         renderSchedule();
+        renderTimeline();
         updateDashboard();
         renderMedicationHistory();
         renderWeeklyAdherenceChart();
         checkLowStockAlerts();
+        checkDrugInteractions();
         startReminderCheck();
         registerServiceWorker();
     }
 
-    // Service Worker Registration for PWA support
     function registerServiceWorker() {
         if ('serviceWorker' in navigator) {
             const swUrl = new URL('./sw.js', import.meta.url);
@@ -180,26 +207,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // LocalStorage Data Management
+    // Data Management & Profiles
+    function getStorageKey(base) {
+        return `${base}_${currentProfile}`;
+    }
+
     function saveData() {
         try {
-            localStorage.setItem('medicineSchedule', JSON.stringify(medicines));
-            localStorage.setItem('medicationHistory', JSON.stringify(medicationHistory));
-            localStorage.setItem('patientInfo', JSON.stringify(getPatientInfo()));
+            localStorage.setItem(getStorageKey('medicineSchedule'), JSON.stringify(medicines));
+            localStorage.setItem(getStorageKey('medicationHistory'), JSON.stringify(medicationHistory));
+            localStorage.setItem(getStorageKey('patientInfo'), JSON.stringify(getPatientInfo()));
             localStorage.setItem('settings', JSON.stringify(settings));
         } catch (error) {
-            console.error('Failed to save data:', error);
+            console.error('Failed to save storage data:', error);
             showNotification('Failed to save data locally', 'error');
         }
     }
 
     function loadData() {
         try {
-            medicines = JSON.parse(localStorage.getItem('medicineSchedule')) || [];
-            medicationHistory = JSON.parse(localStorage.getItem('medicationHistory')) || [];
+            medicines = JSON.parse(localStorage.getItem(getStorageKey('medicineSchedule'))) || [];
+            medicationHistory = JSON.parse(localStorage.getItem(getStorageKey('medicationHistory'))) || [];
             settings = { ...settings, ...JSON.parse(localStorage.getItem('settings')) };
-            
-            // Normalize medicine items with defaults for stock and color
+
             medicines = medicines.map(m => ({
                 formType: 'Tablet',
                 color: 'blue',
@@ -230,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadPatientInfo() {
-        const savedInfo = JSON.parse(localStorage.getItem('patientInfo'));
+        const savedInfo = JSON.parse(localStorage.getItem(getStorageKey('patientInfo')));
         if (savedInfo) {
             elements.patientNameInput.value = savedInfo.name || '';
             elements.patientDobInput.value = savedInfo.dob || '';
@@ -238,12 +268,20 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.patientAllergiesInput.value = savedInfo.allergies || '';
             elements.doctorNameInput.value = savedInfo.doctorName || '';
             elements.doctorContactInput.value = savedInfo.doctorContact || '';
+        } else {
+            elements.patientNameInput.value = '';
+            elements.patientDobInput.value = '';
+            elements.patientContactInput.value = '';
+            elements.patientAllergiesInput.value = '';
+            elements.doctorNameInput.value = '';
+            elements.doctorContactInput.value = '';
         }
     }
 
     function loadSettings() {
         elements.enableNotificationsCheckbox.checked = settings.enableNotifications;
         elements.enableAudioCheckbox.checked = settings.enableAudio !== false;
+        elements.enableInteractionCheckCheckbox.checked = settings.enableInteractionCheck !== false;
         elements.autoSaveCheckbox.checked = settings.autoSave !== false;
         elements.defaultReminderSelect.value = settings.defaultReminder || 10;
         updateSoundIconState();
@@ -258,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Web Audio API Reminders Chime Sound
+    // Sound Reminders
     function playReminderSound() {
         if (!settings.enableAudio) return;
         try {
@@ -271,7 +309,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const now = audioContext.currentTime;
             
-            // Oscillator 1 (E5 - 659.25Hz)
             const osc1 = audioContext.createOscillator();
             const gain1 = audioContext.createGain();
             osc1.type = 'sine';
@@ -282,7 +319,6 @@ document.addEventListener('DOMContentLoaded', () => {
             osc1.connect(gain1);
             gain1.connect(audioContext.destination);
 
-            // Oscillator 2 (G5 - 783.99Hz)
             const osc2 = audioContext.createOscillator();
             const gain2 = audioContext.createGain();
             osc2.type = 'sine';
@@ -298,13 +334,61 @@ document.addEventListener('DOMContentLoaded', () => {
             osc2.start(now + 0.2);
             osc2.stop(now + 0.75);
         } catch (e) {
-            console.log('Audio chime blocked or unavailable:', e);
+            console.log('Audio chime unavailable:', e);
         }
     }
 
-    // Event Listeners Setup
+    // Text-to-Speech Voice Assistant
+    function speakSchedule() {
+        if (!('speechSynthesis' in window)) {
+            showNotification('Text-to-speech not supported in browser', 'error');
+            return;
+        }
+
+        window.speechSynthesis.cancel();
+        const pName = elements.patientNameInput.value.trim() || 'Patient';
+        const todayCount = medicines.reduce((sum, m) => sum + m.times.length, 0);
+
+        if (todayCount === 0) {
+            const utter = new SpeechSynthesisUtterance(`Hello ${pName}. You have no medicines scheduled for today.`);
+            window.speechSynthesis.speak(utter);
+            return;
+        }
+
+        const nextInfo = getNextDoseInfo();
+        let text = `Hello ${pName}. You have ${todayCount} scheduled dose times today. `;
+        if (nextInfo) {
+            text += `Your next dose is ${nextInfo.medicine.name}, scheduled for ${format12HourTime(nextInfo.time)}.`;
+        } else {
+            text += `All scheduled doses for today have been completed. Great job!`;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.95;
+        window.speechSynthesis.speak(utterance);
+        showNotification('Speaking schedule...', 'info');
+    }
+
+    // Event Listeners
     function setupEventListeners() {
-        // Form submit & cancel
+        // Profile Selector
+        elements.profileSelector?.addEventListener('change', (e) => {
+            currentProfile = e.target.value;
+            loadData();
+            renderSchedule();
+            renderTimeline();
+            updateDashboard();
+            renderMedicationHistory();
+            renderWeeklyAdherenceChart();
+            checkLowStockAlerts();
+            checkDrugInteractions();
+            showNotification(`Switched profile to ${currentProfile}`, 'info');
+        });
+
+        // Voice Readout Button
+        elements.voiceSpeakBtn?.addEventListener('click', speakSchedule);
+
+        // Form events
         elements.medicineForm.addEventListener('submit', handleMedicineSubmit);
         elements.addTimeBtn.addEventListener('click', () => addTimeInput());
         elements.cancelEditBtn.addEventListener('click', cancelEditing);
@@ -314,26 +398,42 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.patientFieldsContainer.classList.toggle('hidden');
         });
 
-        // Patient / Doctor profile auto-save
+        // Patient profile auto-save
         [elements.patientNameInput, elements.patientDobInput, elements.patientContactInput, 
          elements.patientAllergiesInput, elements.doctorNameInput, elements.doctorContactInput]
             .forEach(input => input.addEventListener('input', () => {
                 if (settings.autoSave) saveData();
             }));
 
-        // Search & Filter listeners
+        // Search & Filter
         elements.searchMedicineInput.addEventListener('input', debounce(filterSchedule, 250));
         elements.filterTimeSelect.addEventListener('change', filterSchedule);
         elements.filterStatusSelect.addEventListener('change', filterSchedule);
 
-        // Toolbar action buttons
+        // Toolbar Buttons
         elements.downloadPdfButton.addEventListener('click', generatePDF);
+        elements.printPillboxBtn?.addEventListener('click', openPillboxModal);
         elements.exportICalButton?.addEventListener('click', generateICalendar);
+        elements.exportCsvBtn?.addEventListener('click', exportCSV);
         elements.exportDataButton.addEventListener('click', exportData);
         elements.resetScheduleButton.addEventListener('click', resetSchedule);
         elements.soundToggle?.addEventListener('click', toggleAudio);
 
-        // Modal triggers
+        // Banners
+        elements.dismissStockBannerBtn?.addEventListener('click', () => elements.lowStockBanner.classList.add('hidden'));
+        elements.dismissInteractionBannerBtn?.addEventListener('click', () => elements.interactionAlertBanner.classList.add('hidden'));
+        elements.openRefillModalBtn?.addEventListener('click', openRefillModal);
+
+        // Refill Modal
+        elements.closeRefillModalBtn?.addEventListener('click', () => elements.refillModal.classList.add('hidden'));
+        elements.closeRefillModalX?.addEventListener('click', () => elements.refillModal.classList.add('hidden'));
+        elements.copyRefillTextBtn?.addEventListener('click', copyRefillText);
+
+        // Pillbox Modal
+        elements.closePillboxModalBtn?.addEventListener('click', () => elements.pillboxModal.classList.add('hidden'));
+        elements.closePillboxModalX?.addEventListener('click', () => elements.pillboxModal.classList.add('hidden'));
+
+        // Info & Settings Modals
         elements.infoButton.addEventListener('click', () => elements.infoModal.classList.remove('hidden'));
         elements.settingsButton.addEventListener('click', () => elements.settingsModal.classList.remove('hidden'));
         elements.closeModalButton.addEventListener('click', () => elements.infoModal.classList.add('hidden'));
@@ -343,12 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.closeDrugModalBtn?.addEventListener('click', () => elements.drugInfoModal.classList.add('hidden'));
         elements.closeDrugModalX?.addEventListener('click', () => elements.drugInfoModal.classList.add('hidden'));
 
-        // Dismiss Stock Warning Banner
-        elements.dismissStockBannerBtn?.addEventListener('click', () => {
-            elements.lowStockBanner.classList.add('hidden');
-        });
-
-        // Due Reminder Modal actions
+        // Reminder Modal
         elements.reminderTakeBtn?.addEventListener('click', () => {
             if (activeReminderTarget) {
                 markAsTaken(activeReminderTarget.id, activeReminderTarget.time);
@@ -360,35 +455,31 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.reminderAlertModal.classList.add('hidden');
         });
 
-        // History clear
+        // History
         elements.clearHistoryBtn?.addEventListener('click', clearHistory);
-
-        // Theme toggle
         elements.themeToggle?.addEventListener('click', toggleTheme);
 
-        // Data Import
+        // Import
         elements.importDataButton?.addEventListener('click', () => elements.importFileInput.click());
         elements.importFileInput?.addEventListener('change', handleImportFile);
 
-        // Backdrop click modal close
-        [elements.infoModal, elements.settingsModal, elements.drugInfoModal, elements.reminderAlertModal].forEach(modal => {
+        // Backdrop click modals
+        [elements.infoModal, elements.settingsModal, elements.drugInfoModal, elements.reminderAlertModal, elements.refillModal, elements.pillboxModal].forEach(modal => {
             modal?.addEventListener('click', (e) => {
                 if (e.target === modal) modal.classList.add('hidden');
             });
         });
 
-        // Autocomplete on medicine name input
+        // Autocomplete
         elements.medicineNameInput.addEventListener('input', debounce(fetchAutocompleteSuggestions, 300));
         elements.autocompleteSuggestions.addEventListener('click', handleAutocompleteClick);
 
-        // Notification Permission switch
         elements.enableNotificationsCheckbox.addEventListener('change', (e) => {
             settings.enableNotifications = e.target.checked;
             if (e.target.checked) requestNotificationPermission();
         });
     }
 
-    // Utility: Debounce wrapper
     function debounce(func, delay) {
         let timeout;
         return (...args) => {
@@ -397,7 +488,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Notification Toast UI
     function showNotification(message, type = 'info') {
         const toast = document.createElement('div');
         const bgClass = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-blue-600';
@@ -416,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => toast.remove(), 4500);
     }
 
-    // Time Slot Form Dynamic Input Management
+    // Time Slot Input Generator
     function createTimeInput(value = '') {
         const div = document.createElement('div');
         div.className = 'flex items-center gap-2';
@@ -439,7 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Autocomplete API (RxNav NIH)
+    // RxNav Autocomplete
     async function fetchAutocompleteSuggestions() {
         const query = elements.medicineNameInput.value.trim();
         if (query.length < 3) {
@@ -453,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const suggestions = data.drugGroup?.drugList?.drug?.map(d => d.name) || [];
             renderAutocomplete(suggestions.slice(0, 6));
         } catch (error) {
-            console.error('Failed to fetch RxNav suggestions:', error);
+            console.error('Failed to fetch suggestions:', error);
             elements.autocompleteSuggestions.classList.add('hidden');
         }
     }
@@ -480,7 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Medicine Form Processing
+    // Medicine Submission
     async function handleMedicineSubmit(e) {
         e.preventDefault();
         if (!validateForm()) return;
@@ -500,9 +590,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             resetForm();
             renderSchedule();
+            renderTimeline();
             updateDashboard();
             renderWeeklyAdherenceChart();
             checkLowStockAlerts();
+            checkDrugInteractions();
         } catch (error) {
             console.error('Error submitting medicine:', error);
             showNotification('Failed to save medicine', 'error');
@@ -597,7 +689,6 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelEditing();
     }
 
-    // Fetch RxNav Drug Information
     async function fetchMedicineInfo(medicineName) {
         try {
             const response = await fetch(`https://rxnav.nlm.nih.gov/REST/drugs.json?name=${encodeURIComponent(medicineName)}`);
@@ -678,7 +769,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </span>`;
             }
 
-            // Stock Badge
             let stockDisplay = '<span class="text-slate-400">N/A</span>';
             if (item.stock !== null && item.stock !== undefined) {
                 if (item.stock === 0) {
@@ -748,6 +838,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 24-Hour Visual Schedule Timeline Renderer
+    function renderTimeline() {
+        if (!elements.timelineContainer) return;
+        elements.timelineContainer.innerHTML = '';
+
+        const scheduleItems = [];
+        medicines.forEach(medicine => {
+            medicine.times.forEach(time => {
+                scheduleItems.push({ ...medicine, time });
+            });
+        });
+
+        if (scheduleItems.length === 0) return;
+
+        scheduleItems.forEach(item => {
+            const [h, min] = item.time.split(':').map(Number);
+            const totalMinutes = h * 60 + min;
+            const percentage = (totalMinutes / 1440) * 100;
+
+            const colorMeta = colorClasses[item.color] || colorClasses.blue;
+            const marker = document.createElement('div');
+            marker.className = 'timeline-marker group';
+            marker.style.left = `${percentage}%`;
+            marker.style.backgroundColor = colorMeta.dot;
+
+            marker.innerHTML = `
+                <div class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] py-1 px-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-xl pointer-events-none z-30">
+                    <span class="font-bold">${format12HourTime(item.time)}</span> — ${item.name} (${item.dosage || '1 dose'})
+                </div>
+            `;
+            elements.timelineContainer.appendChild(marker);
+        });
+    }
+
     function getDoseStatus(medicine) {
         const todayStr = getLocalDateString();
         const now = new Date();
@@ -770,7 +894,6 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.exportDataButton.disabled = isEmpty;
     }
 
-    // Search and Filtering
     function filterSchedule() {
         const searchTerm = elements.searchMedicineInput.value.toLowerCase().trim();
         const timeFilter = elements.filterTimeSelect.value;
@@ -809,7 +932,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Dashboard Statistics Updates
+    // Dashboard Statistics & Adherence Streak
     function updateDashboard() {
         elements.totalMedicines.textContent = medicines.length;
         elements.activePrescriptionsCount.textContent = medicines.length;
@@ -835,9 +958,14 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.adherenceLabel.textContent = `${takenTodayCount} of ${todayDosesTotal} doses taken`;
         }
 
-        // SVG progress ring
         const strokeDashoffset = 100 - adherencePercent;
         elements.adherenceRing.style.strokeDashoffset = strokeDashoffset;
+
+        // Adherence Streak Calculation
+        const streakDays = calculateAdherenceStreak();
+        if (elements.streakBadge) {
+            elements.streakBadge.textContent = `🔥 ${streakDays}d Streak`;
+        }
 
         // Next Dose Calculation
         const nextInfo = getNextDoseInfo();
@@ -848,6 +976,33 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.nextDose.textContent = '--:--';
             elements.nextDoseMedName.textContent = 'No pending doses';
         }
+    }
+
+    function calculateAdherenceStreak() {
+        if (medicines.length === 0) return 0;
+        let streak = 0;
+        let d = new Date();
+
+        for (let i = 0; i < 30; i++) {
+            const dateStr = getLocalDateString(d);
+            const totalScheduled = medicines.reduce((sum, m) => sum + m.times.length, 0);
+            if (totalScheduled === 0) break;
+
+            let takenCount = 0;
+            medicines.forEach(m => {
+                (m.taken || []).forEach(t => {
+                    if (t.date === dateStr) takenCount++;
+                });
+            });
+
+            if (takenCount >= totalScheduled) {
+                streak++;
+            } else if (i > 0) {
+                break; // Break streak if missing past day
+            }
+            d.setDate(d.getDate() - 1);
+        }
+        return streak;
     }
 
     function getNextDoseInfo() {
@@ -871,7 +1026,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // If all doses for today are done/passed, look for tomorrow's earliest dose
         if (!candidate && medicines.length > 0) {
             medicines.forEach(m => {
                 m.times.forEach(time => {
@@ -890,7 +1044,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return candidate;
     }
 
-    // 7-Day Adherence Analytics Chart Renderer
     function renderWeeklyAdherenceChart() {
         if (!elements.weeklyAdherenceChart) return;
         elements.weeklyAdherenceChart.innerHTML = '';
@@ -933,6 +1086,49 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // RxNav Drug-Drug Interaction Safety Checker Matrix
+    async function checkDrugInteractions() {
+        if (!settings.enableInteractionCheck || medicines.length < 2) {
+            elements.interactionAlertBanner.classList.add('hidden');
+            return;
+        }
+
+        const rxcuis = medicines.map(m => m.info?.rxcui).filter(Boolean);
+        if (rxcuis.length < 2) {
+            elements.interactionAlertBanner.classList.add('hidden');
+            return;
+        }
+
+        try {
+            const url = `https://rxnav.nlm.nih.gov/REST/interaction/list.json?rxcuis=${rxcuis.join('+')}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            const interactionPairs = [];
+            const fullPairs = data.fullInteractionTypeGroup?.[0]?.fullInteractionType || [];
+            
+            fullPairs.forEach(group => {
+                group.interactionPair?.forEach(pair => {
+                    const desc = pair.description || 'Potential interaction reported between medications.';
+                    const drugA = pair.interactionConcept?.[0]?.minConceptItem?.name || 'Drug A';
+                    const drugB = pair.interactionConcept?.[1]?.minConceptItem?.name || 'Drug B';
+                    interactionPairs.push(`• <strong>${drugA}</strong> ↔ <strong>${drugB}</strong>: ${desc}`);
+                });
+            });
+
+            if (interactionPairs.length > 0) {
+                elements.interactionAlertSummary.textContent = `${interactionPairs.length} potential interaction(s) detected between your active medications.`;
+                elements.interactionDetailsList.innerHTML = interactionPairs.slice(0, 3).join('<br>');
+                elements.interactionAlertBanner.classList.remove('hidden');
+            } else {
+                elements.interactionAlertBanner.classList.add('hidden');
+            }
+        } catch (err) {
+            console.error('RxNav interaction check error:', err);
+            elements.interactionAlertBanner.classList.add('hidden');
+        }
+    }
+
     // Low Stock Alert Warnings
     function checkLowStockAlerts() {
         const lowStockMeds = medicines.filter(m => m.stock !== null && m.stock !== undefined && m.stock <= (m.refillAlert || 5));
@@ -943,6 +1139,72 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             elements.lowStockBanner.classList.add('hidden');
         }
+    }
+
+    // Refill Request Generator
+    function openRefillModal() {
+        const patientName = elements.patientNameInput.value.trim() || 'Patient';
+        const docName = elements.doctorNameInput.value.trim() || 'Healthcare Provider';
+        const lowMeds = medicines.filter(m => m.stock !== null && m.stock !== undefined && m.stock <= (m.refillAlert || 5));
+        const medList = lowMeds.length > 0 ? lowMeds : medicines;
+
+        let message = `REFILL REQUEST NOTICE\n`;
+        message += `Date: ${new Date().toLocaleDateString()}\n`;
+        message += `Patient Name: ${patientName}\n`;
+        message += `Doctor: ${docName}\n\n`;
+        message += `Dear Pharmacy / Clinic,\n\n`;
+        message += `I would like to request a prescription refill for the following medications:\n`;
+
+        medList.forEach((m, idx) => {
+            message += `${idx + 1}. ${m.name} (${m.dosage || 'Standard Dosage'}) — Current Stock: ${m.stock !== null ? m.stock : 'Low'}\n`;
+        });
+
+        message += `\nThank you,\n${patientName}`;
+        elements.refillTextArea.value = message;
+        elements.refillModal.classList.remove('hidden');
+    }
+
+    function copyRefillText() {
+        elements.refillTextArea.select();
+        navigator.clipboard.writeText(elements.refillTextArea.value);
+        showNotification('Refill request copied to clipboard!', 'success');
+    }
+
+    // Printable Weekly Pillbox Organizer Sheet
+    function openPillboxModal() {
+        const tbody = elements.pillboxTableBody;
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        const timeSlots = ['Morning (6am-12pm)', 'Afternoon (12pm-5pm)', 'Evening (5pm-9pm)', 'Night (9pm-6am)'];
+
+        timeSlots.forEach(slot => {
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-slate-50 dark:hover:bg-slate-800/50';
+            
+            let slotPeriod = 'morning';
+            if (slot.includes('Afternoon')) slotPeriod = 'afternoon';
+            if (slot.includes('Evening')) slotPeriod = 'evening';
+            if (slot.includes('Night')) slotPeriod = 'night';
+
+            const slotMeds = medicines.filter(m => isTimeInPeriod(m.times[0] || '08:00', slotPeriod));
+            const medCellContent = slotMeds.length > 0 ? 
+                slotMeds.map(m => `<div><strong>${m.name}</strong> (${m.dosage || '1 dose'})</div>`).join('') : '<span class="text-slate-300">-</span>';
+
+            row.innerHTML = `
+                <td class="p-2.5 font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap bg-slate-50 dark:bg-slate-900">${slot}</td>
+                <td class="p-2.5">${medCellContent}</td>
+                <td class="p-2.5">${medCellContent}</td>
+                <td class="p-2.5">${medCellContent}</td>
+                <td class="p-2.5">${medCellContent}</td>
+                <td class="p-2.5">${medCellContent}</td>
+                <td class="p-2.5">${medCellContent}</td>
+                <td class="p-2.5">${medCellContent}</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        elements.pillboxModal.classList.remove('hidden');
     }
 
     // History Log Management
@@ -1038,9 +1300,11 @@ document.addEventListener('DOMContentLoaded', () => {
             addToHistory('deleted', medicine);
             saveData();
             renderSchedule();
+            renderTimeline();
             updateDashboard();
             renderWeeklyAdherenceChart();
             checkLowStockAlerts();
+            checkDrugInteractions();
             showNotification('Medicine deleted successfully', 'success');
         }
     };
@@ -1051,17 +1315,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const todayStr = getLocalDateString();
             if (!medicine.taken) medicine.taken = [];
 
-            // Remove previous entry for today+time if present
             medicine.taken = medicine.taken.filter(t => !(t.date === todayStr && t.time === time));
 
-            // Push new taken entry
             medicine.taken.push({
                 date: todayStr,
                 time: time,
                 timestamp: new Date().toISOString()
             });
 
-            // Decrement inventory stock if set
             if (medicine.stock !== null && medicine.stock !== undefined && medicine.stock > 0) {
                 medicine.stock -= 1;
             }
@@ -1069,6 +1330,7 @@ document.addEventListener('DOMContentLoaded', () => {
             addToHistory('taken', medicine);
             saveData();
             renderSchedule();
+            renderTimeline();
             updateDashboard();
             renderWeeklyAdherenceChart();
             checkLowStockAlerts();
@@ -1082,13 +1344,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const todayStr = getLocalDateString();
             medicine.taken = medicine.taken.filter(t => !(t.date === todayStr && t.time === time));
             
-            // Re-increment stock if set
             if (medicine.stock !== null && medicine.stock !== undefined) {
                 medicine.stock += 1;
             }
 
             saveData();
             renderSchedule();
+            renderTimeline();
             updateDashboard();
             renderWeeklyAdherenceChart();
             checkLowStockAlerts();
@@ -1107,15 +1369,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Application Preferences & Settings
     function saveSettings() {
         settings.enableNotifications = elements.enableNotificationsCheckbox.checked;
         settings.enableAudio = elements.enableAudioCheckbox.checked;
+        settings.enableInteractionCheck = elements.enableInteractionCheckCheckbox.checked;
         settings.autoSave = elements.autoSaveCheckbox.checked;
         settings.defaultReminder = parseInt(elements.defaultReminderSelect.value, 10);
 
         saveData();
         updateSoundIconState();
+        checkDrugInteractions();
         elements.settingsModal.classList.add('hidden');
         showNotification('Preferences updated', 'success');
     }
@@ -1128,7 +1391,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showNotification(settings.enableAudio ? 'Audio reminders enabled' : 'Audio reminders muted', 'info');
     }
 
-    // Theme Switcher (Dark / Light Mode)
     function toggleTheme() {
         const isDark = document.documentElement.classList.toggle('dark');
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
@@ -1147,7 +1409,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateThemeIcon(isDark);
     })();
 
-    // Data Import & Export Features
+    // Import / Export Systems
     function handleImportFile(event) {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -1169,9 +1431,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 saveData();
                 renderSchedule();
+                renderTimeline();
                 updateDashboard();
                 renderWeeklyAdherenceChart();
                 checkLowStockAlerts();
+                checkDrugInteractions();
                 showNotification('Data imported successfully!', 'success');
             } catch (e) {
                 showNotification('Invalid JSON import file', 'error');
@@ -1183,6 +1447,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function exportData() {
         const data = {
+            profile: currentProfile,
             medicines,
             patientInfo: getPatientInfo(),
             exportDate: new Date().toISOString()
@@ -1192,13 +1457,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `medicine-tracker-backup-${getLocalDateString()}.json`;
+        a.download = `medicine-tracker-backup-${currentProfile}-${getLocalDateString()}.json`;
         a.click();
         URL.revokeObjectURL(url);
         showNotification('Data exported as JSON', 'success');
     }
 
-    // iCalendar (.ics) Sync Export
+    function exportCSV() {
+        if (medicationHistory.length === 0) {
+            showNotification('No history to export', 'error');
+            return;
+        }
+
+        let csv = 'Timestamp,Medicine,Action,Details\n';
+        medicationHistory.forEach(h => {
+            csv += `"${h.timestamp}","${h.medicineName}","${h.action}","${h.details}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `medication-history-${getLocalDateString()}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showNotification('History exported as CSV', 'success');
+    }
+
     function generateICalendar() {
         if (medicines.length === 0) {
             showNotification('No medicines to export', 'error');
@@ -1208,7 +1493,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let icsContent = [
             'BEGIN:VCALENDAR',
             'VERSION:2.0',
-            'PRODID:-//Medicine Tracker Pro//NONSGML v2.5//EN',
+            'PRODID:-//Medicine Tracker Ultra//NONSGML v3.0//EN',
             'CALSCALE:GREGORIAN',
             'METHOD:PUBLISH'
         ];
@@ -1220,9 +1505,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const year = now.getFullYear();
                 const month = String(now.getMonth() + 1).padStart(2, '0');
                 const day = String(now.getDate()).padStart(2, '0');
-                
                 const dtStart = `${year}${month}${day}T${hh}${mm}00`;
-                
+
                 icsContent.push('BEGIN:VEVENT');
                 icsContent.push(`SUMMARY:Take ${m.name} (${m.dosage || '1 dose'})`);
                 icsContent.push(`DESCRIPTION:Medication Reminder: ${m.name}. Instructions: ${m.instructions || 'None'}`);
@@ -1245,22 +1529,25 @@ document.addEventListener('DOMContentLoaded', () => {
         showNotification('iCal (.ics) exported for calendar sync!', 'success');
     }
 
-    // Reset Schedule
     function resetSchedule() {
-        if (confirm('Are you sure you want to clear all medicines and settings? This action cannot be undone.')) {
+        if (confirm('Are you sure you want to clear all medicines and settings for this profile? This action cannot be undone.')) {
             medicines = [];
             medicationHistory = [];
-            localStorage.clear();
+            localStorage.removeItem(getStorageKey('medicineSchedule'));
+            localStorage.removeItem(getStorageKey('medicationHistory'));
+            localStorage.removeItem(getStorageKey('patientInfo'));
             renderSchedule();
+            renderTimeline();
             updateDashboard();
             renderMedicationHistory();
             renderWeeklyAdherenceChart();
             checkLowStockAlerts();
-            showNotification('All data cleared', 'info');
+            checkDrugInteractions();
+            showNotification('Profile data cleared', 'info');
         }
     }
 
-    // Browser Push & Due Dose Alarm Reminder Logic
+    // Reminders Engine
     function requestNotificationPermission() {
         if ('Notification' in window) {
             Notification.requestPermission().then(permission => {
@@ -1294,7 +1581,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function triggerDoseAlarm(medicine, time) {
         playReminderSound();
 
-        // Show browser push notification if enabled
         if (settings.enableNotifications && 'Notification' in window && Notification.permission === 'granted') {
             new Notification(`Medicine Time: ${medicine.name}`, {
                 body: `Scheduled for ${format12HourTime(time)}. Dosage: ${medicine.dosage || '1 dose'}.`,
@@ -1302,17 +1588,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Show interactive Due Reminder Modal
         activeReminderTarget = { id: medicine.id, time };
         elements.reminderModalText.textContent = `It is time to take ${medicine.name} (${medicine.dosage || '1 dose'}) scheduled for ${format12HourTime(time)}.`;
         elements.reminderAlertModal.classList.remove('hidden');
     }
 
     function startReminderCheck() {
-        setInterval(checkForUpcomingDoses, 30000); // Check twice every minute
+        setInterval(checkForUpcomingDoses, 30000);
     }
 
-    // Printable PDF Generation (jsPDF)
+    // PDF Generator
     function generatePDF() {
         if (typeof window.jspdf === 'undefined') {
             showNotification('PDF library loading error', 'error');
@@ -1322,7 +1607,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
-        // Header Title & Branding
         doc.setFillColor(37, 99, 235);
         doc.rect(0, 0, 210, 30, 'F');
 
@@ -1337,7 +1621,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let yOffset = 42;
 
-        // Patient & Doctor Box
         const pInfo = getPatientInfo();
         doc.setTextColor(15, 23, 42);
         doc.setFontSize(12);
@@ -1367,7 +1650,6 @@ document.addEventListener('DOMContentLoaded', () => {
             didDrawPage: (data) => { yOffset = data.cursor.y + 12; }
         });
 
-        // Schedule Table
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
         doc.text('Daily Medication Protocol', 15, yOffset);
@@ -1412,6 +1694,5 @@ document.addEventListener('DOMContentLoaded', () => {
         showNotification('Printable PDF generated successfully', 'success');
     }
 
-    // Launch Application
     init();
 });
