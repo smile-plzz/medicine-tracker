@@ -2,7 +2,17 @@
 
 All notable changes to the Medicine Tracker application will be documented in this file.
 
-## [3.6.0] - 2026-07-29
+## [3.7.0] - 2026-07-29
+
+### 🎨 Minimalistic Modern Theme
+- **Clean flat design**: Removed glassmorphism, backdrop blur, and heavy gradients from cards, header, and banners.
+- **Simplified color palette**: Replaced multi-gradient buttons with flat indigo/emerald/purple/rose solid colors; reduced shadow intensity across all components.
+- **Reduced visual noise**: Simplified timeline markers, form inputs, and notification toasts; removed unnecessary decorative effects.
+- **Tighter spacing**: Reduced border-radius (1rem → 0.75rem for cards, 0.625rem → 0.5rem for buttons/inputs), reduced padding, and smaller font sizes.
+- **Subtle animations**: Shortened transition durations (0.25s → 0.2s) and removed heavy hover transforms (card translateY, button gradients).
+- **Cleaner dark mode**: Simplified dark theme to flat `#1e293b` backgrounds with `#334155` borders instead of rgba overlays.
+- **Minimal header**: Removed `backdrop-blur-md` and glass effect from sticky header; uses clean white background.
+- **Simplified banners**: Alert banners use flat `bg-rose-50`/`bg-amber-50` instead of translucent gradient backgrounds.
 
 ### 🎨 UI/UX Improvements
 - **Inline Handler Refactor**: Removed all inline `onclick` handlers from HTML and dynamically generated schedule rows; replaced with delegated event listeners in `src/main.js` for maintainability.

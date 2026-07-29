@@ -24,7 +24,23 @@
   - Verified production build via `npm run build` (Exit code: 0, Built in 1.18s).
 - **Status**: Completed & pushed to master.
 
-## [2026-07-29 21:45:00] - Version 3.6 UI/UX Polish & Interaction Improvements
+## [2026-07-29 22:10:00] - Version 3.7 Minimalistic Modern Theme
+- **Task**: Apply a minimalistic modern theme to the Medicine Tracker application.
+- **Actions**:
+  - Removed glassmorphism effects (backdrop-filter, blur, rgba overlays) from cards, header, and banners.
+  - Replaced gradient backgrounds with flat solid colors (#f8fafc light, #0f172a dark).
+  - Simplified buttons: removed gradients and box-shadows, using flat solid colors (indigo #4f46e5, emerald #059669, purple #7c3aed, rose #dc2626).
+  - Reduced border-radius: cards 1rem → 0.75rem, buttons/inputs 0.625rem → 0.5rem.
+  - Reduced shadow intensity: removed multi-layer shadows, using single subtle shadows (0 1px 2px rgba(0,0,0,0.04)).
+  - Simplified timeline: reduced height (12px → 8px), marker size (16px → 14px).
+  - Shortened animation durations: transitions 0.25s → 0.2s, modal animations 0.25s → 0.2s.
+  - Removed card hover translateY transform, keeping only shadow change on hover.
+  - Simplified dark mode: flat #1e293b backgrounds, #334155 borders, no rgba overlays.
+  - Removed backdrop-blur from header, using clean white background.
+  - Simplified alert banners: flat bg-rose-50/bg-amber-50 instead of translucent gradients.
+  - Reduced scrollbar size (6px → 4px) and simplified styling.
+  - Verified production build via `npx parcel build` (Exit code: 0).
+- **Status**: Completed and pushed.
 - **Task**: Implement targeted frontend polish and interaction improvements per the UI/UX improvement plan.
 - **Actions**:
   - Refactored all inline `onclick` handlers in `public/index.html` and `src/main.js` to use delegated event listeners (`addEventListener` on `scheduleTableBody`, `timeInputs`, `notificationContainer`, `more-actions-dropdown`).
