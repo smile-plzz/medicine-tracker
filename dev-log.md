@@ -24,7 +24,14 @@
   - Verified production build via `npm run build` (Exit code: 0, Built in 1.18s).
 - **Status**: Completed & pushed to master.
 
-## [2026-07-29 22:10:00] - Version 3.7 Minimalistic Modern Theme
+## [2026-07-29 22:15:00] - Service Worker Cache Fix
+- **Task**: Fix local deployment "keeps loading" issue caused by stale service worker cache.
+- **Actions**:
+  - Updated `src/sw.js` to use network-first fetch strategy (fetch first, cache as fallback) instead of cache-first.
+  - Added `self.skipWaiting()` and `self.clients.claim()` to ensure new service workers activate immediately.
+  - Bumped cache name from `medicine-tracker-v2` to `medicine-tracker-v3` to invalidate old cached assets.
+  - Committed and pushed fix.
+- **Status**: Completed.
 - **Task**: Apply a minimalistic modern theme to the Medicine Tracker application.
 - **Actions**:
   - Removed glassmorphism effects (backdrop-filter, blur, rgba overlays) from cards, header, and banners.

@@ -2,6 +2,11 @@
 
 All notable changes to the Medicine Tracker application will be documented in this file.
 
+## [3.7.1] - 2026-07-29
+
+### 🐛 Bug Fixes
+- **Service Worker Stale Cache**: Fixed "keeps loading" issue by switching to network-first fetch strategy, adding `skipWaiting()`/`clients.claim()` for immediate activation, and bumping cache name to invalidate old assets.
+
 ## [3.7.0] - 2026-07-29
 
 ### 🎨 Minimalistic Modern Theme
