@@ -2,6 +2,16 @@
 
 All notable changes to the Medicine Tracker application will be documented in this file.
 
+## [3.8.1] - 2026-07-30
+
+### 🐛 Build Fixes
+- **Cross-platform build restored**: `node_modules/` was committed to the repository (3,942 files) carrying only the Windows Parcel native binary (`@parcel/rust-win32-x64-msvc`). On Linux — including Vercel's build image — `npm run build` aborted with `Cannot find module '@parcel/rust-linux-x64-gnu'`. The directory is now untracked (it was already listed in `.gitignore`, which only applies to untracked paths), so each environment installs its own platform binary from `package-lock.json`.
+- **Repository cleanup**: Removed stray files `as` (empty, accidental shell redirect) and `commit_message.txt` (leftover commit scratch file).
+
+### ✅ Verification
+- `npm ci && npm run build` verified from a clean source-only checkout (mirrors the Vercel build) — exit code 0, bundles emitted to `dist/`.
+- Browser smoke test against the production bundle: add medicine → schedule row renders → mark dose taken → history logged → theme toggle → info/settings modals → state persists across reload. No uncaught page errors.
+
 ## [3.8.0] - 2026-07-29
 
 ### 🎨 Dark Mode Default & Layout Refinement

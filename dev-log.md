@@ -86,3 +86,23 @@
   - Verified production build via `npm run build` (Exit code: 0, Built in 1.31s).
 - **Verification**: `npm run build` executed cleanly producing optimized bundles in `dist/`.
 - **Status**: Task completed successfully. Ready for commit & push.
+
+## [2026-07-30] - Build Repair & End-to-End Verification
+- **Task**: Complete the build — `npm run build` was failing outright.
+- **Diagnosis**:
+  - `npm run build` exited with `Error: Cannot find module '@parcel/rust-linux-x64-gnu'`.
+  - Root cause: `node_modules/` was tracked by git (3,942 files). `.gitignore` lists `node_modules/`, but gitignore rules never apply to already-tracked paths, so the directory kept getting committed.
+  - The committed tree contained `@parcel/rust-win32-x64-msvc` only — the Windows native binding. Parcel resolves its native module by platform, so any Linux checkout (developer machine or Vercel build image) had no usable binding.
+- **Actions**:
+  - Ran `npm install` to pull the correct `@parcel/rust-linux-x64-gnu` binding for this platform.
+  - Untracked the vendored dependencies with `git rm -r --cached node_modules`; `.gitignore` now takes effect and platform-correct binaries are installed per environment from `package-lock.json`.
+  - Deleted stray repo files `as` (0-byte, accidental redirect) and `commit_message.txt` (leftover commit scratch).
+- **Verification**:
+  - Clean-checkout build: copied source-only tree (`package.json`, `package-lock.json`, `vercel.json`, `public/`, `src/`) to a fresh directory, ran `npm ci && npm run build` — exit code 0, built in 744ms, emitting `index.html`, `public.js`, `sw.js`, `manifest.webmanifest`, `favicon.svg`. This mirrors Vercel's `buildCommand`.
+  - Static audit: all 130 `getElementById` references in `src/main.js` resolve to IDs present in `public/index.html` (0 missing).
+  - Browser smoke test (Playwright + Chromium) against the served `dist/` bundle: add medicine via form → 1 schedule row rendered and persisted to `medicineSchedule_Primary`; mark-taken button → status flips to "Taken" and 2 entries written to `medicationHistory_Primary`; theme toggle switches root class; info and settings modals open and dismiss via Esc; medicine survives a page reload. No uncaught page errors.
+  - Remaining console errors in the sandbox are solely blocked external hosts (Tailwind/Font Awesome/Google Fonts CDNs and the RxNav API are unreachable through this environment's proxy). The RxNav failure is caught and logged by existing error handling, so the app degrades gracefully.
+- **Notes for follow-up** (not changed, out of scope):
+  - `live-server` sits in `dependencies` though the app is served by Parcel; it is dev-only tooling and belongs in `devDependencies`.
+  - Parcel prints a `caniuse-lite is 12 months old` browserslist warning; `npx update-browserslist-db@latest` clears it.
+- **Status**: Build fixed and verified end to end.
