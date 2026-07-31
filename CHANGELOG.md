@@ -2,6 +2,13 @@
 
 All notable changes to the Medicine Tracker application will be documented in this file.
 
+## [3.8.2] - 2026-07-31
+
+### 🐛 Dark Mode Toggle Was Non-Functional
+- **Root cause**: Tailwind is loaded via the Play CDN (`cdn.tailwindcss.com`) with no `tailwind.config`, so it defaulted to the `media` (OS-preference) dark mode strategy. The app's theme toggle (`src/main.js`) instead flips a `.dark` class on `<html>` — the `class` strategy. Result: all ~108 `dark:` utility classes throughout `public/index.html` only ever responded to the browser/OS color scheme setting and completely ignored the in-app Theme button. Only the handful of custom CSS rules keyed off `:root.dark` (not Tailwind utilities) reacted to the toggle, so clicking "Theme" produced an inconsistent, half-styled page for any user whose OS preference didn't match their chosen in-app theme.
+- **Fix**: added `tailwind.config = { darkMode: 'class' }` immediately after the Tailwind CDN `<script>` tag, so `dark:` utilities now key off the same `.dark` class the toggle already controls.
+- **Follow-on gaps this exposed**: the `<header>` had no dark-mode classes at all (hardcoded `bg-white`/`border-slate-200`), and the drug-interaction and low-stock alert banners had dark-mode text colors but not dark-mode backgrounds/borders — both would have rendered as light-mode boxes floating on a dark page now that `dark:` actually works. Both fixed with matching `dark:bg-*`/`dark:border-*` classes.
+
 ## [3.8.1] - 2026-07-30
 
 ### 🐛 Build Fixes
