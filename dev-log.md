@@ -106,3 +106,19 @@
   - `live-server` sits in `dependencies` though the app is served by Parcel; it is dev-only tooling and belongs in `devDependencies`.
   - Parcel prints a `caniuse-lite is 12 months old` browserslist warning; `npx update-browserslist-db@latest` clears it.
 - **Status**: Build fixed and verified end to end.
+
+## [2026-07-31] - UI/UX Polish: Fixed Non-Functional Dark Mode Toggle
+- **Task**: General UI/UX polish pass.
+- **Investigation**: Could not get a real visual render — the sandbox's egress policy blocks `cdn.tailwindcss.com`, `cdnjs.cloudflare.com`, and `fonts.googleapis.com` (org policy 403, not a transient failure), so Tailwind never loads in this environment and screenshots only show unstyled markup. Reviewed the code directly instead.
+- **Finding**: `public/index.html` loads Tailwind via the Play CDN with no `tailwind.config`. Unconfigured, Tailwind's dark mode defaults to the `media` strategy (follows OS `prefers-color-scheme`). But `src/main.js` (`theme-toggle` handler, `applySavedTheme()`) implements the `class` strategy — it toggles/reads a `.dark` class on `<html>`. Grepped the file: 108 occurrences of `dark:` utility classes, all silently inert against the actual toggle, working only by coincidence when a user's OS theme happened to match. Verified this is real by checking `document.documentElement.classList.toggle('dark')` in main.js against the total absence of any `darkMode` config in the HTML.
+- **Fix**: Added `tailwind.config = { darkMode: 'class' }` in a script tag directly after the Tailwind CDN `<script>` (the documented way to configure the Play CDN — it must run before Tailwind starts scanning the DOM, but after `window.tailwind` exists).
+- **Follow-on audit**: Wrote a script to scan every `class="..."` attribute in `public/index.html` for common light-mode-only utility patterns (`text-slate-900`, `bg-white`, `bg-slate-50/100`, `border-slate-200`, `bg-{color}-50`, `border-{color}-200`) lacking a matching `dark:` counterpart, since fixing the strategy would make all of these suddenly "go live" in dark mode for the first time.
+  - `<header>` had zero dark-mode classes (`bg-white`, `border-slate-200` only) — added `dark:bg-slate-900 dark:border-slate-800`.
+  - `#interaction-alert-banner` and `#low-stock-banner` had `dark:` text colors but hardcoded light `bg-rose-50`/`bg-amber-50` and `border-rose-200`/`border-amber-200` — added `dark:bg-rose-950/40 dark:border-rose-900` and `dark:bg-amber-950/40 dark:border-amber-900` respectively.
+  - Re-ran the same audit against dynamically-generated markup in `src/main.js` (symptom severity badges, dietary caution tags, dropdown menu items) — all already had correct or intentional `dark:` pairings; no further gaps found.
+  - `body`'s `bg-slate-50`/`text-slate-800` flagged too, but that's intentionally handled by the existing `:root.dark body { ... }` plain-CSS rule, not a Tailwind utility — left as is.
+- **Verification**:
+  - `npm run build` — exit 0, built in 4.84s, same bundle set as before.
+  - Playwright smoke test against the rebuilt `dist/` (add medicine, mark taken, history logging, theme toggle, info/settings modals, reload persistence) — all still pass, no regressions. The one new console error in the test (`tailwind is not defined`) is an artifact of the test intentionally blocking the Tailwind CDN request to work around the sandbox's egress policy; in a real deployment where the CDN loads, this doesn't occur.
+  - Could not get pixel-level before/after screenshots due to the sandbox's CDN restriction; confidence in the fix rests on the code-level trace (toggle implementation vs. Tailwind config vs. documented CDN defaults) plus the systematic class-attribute audit above.
+- **Status**: Fixed and verified functionally; visual confirmation should be done in a normal (unblocked) environment or by the user.
